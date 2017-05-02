@@ -47,6 +47,8 @@
         <li><label>Swift</label></li>
 
           
+            <li><a title="Swift的一种常用类型" href="14936932217611.html">Swift的一种常用类型</a></li>
+          
             <li><a title="按钮加下拉弹框控件的封装" href="14924176125873.html">按钮加下拉弹框控件的封装</a></li>
           
 
@@ -67,6 +69,8 @@
 
                     
                       <li class="side-title"><span>Swift</span></li>
+                        
+                          <li><a title="Swift的一种常用类型" href="14936932217611.html">Swift的一种常用类型</a></li>
                         
                           <li><a title="按钮加下拉弹框控件的封装" href="14924176125873.html">按钮加下拉弹框控件的封装</a></li>
                         
@@ -104,7 +108,7 @@
 
 <p>既然是封装,那么这个按钮的宽度就一定不能是死的,所以我决定只设置红色位置的layout,整体控件的宽度由&quot;班次&quot;&quot;全部&quot;两个Label和图片撑开,传入的String多宽控件就多宽.<br/>
    UI的问题解决了,剩下的就是如何初始化和配置还有时间传递的问题了,首先要使用这个控件就必须有两个参数,就是两个String,所以我在初始化方法中添加两个参数,而例如两个Label的颜色这种数据作为public属性,可配置.当然还需要两个get set方法的属性,用于初始化控件后,改变控件上的文字,so,控件的初始化方法和暴露的属性是这个样子的:<br/>
-   <img src="media/14924176125873/WechatIMG247.jpeg" alt="WechatIMG247"/><br/>
+   <img src="media/14924176125873/WechatIMG247.jpeg" alt="WechatIMG247" style="width:572px;"/><br/>
 图中代码上面的初始化的方法和属性,两个Public属性的get和set方法是用于读和设置label的,之所以这么做是因为我觉得分装的控件不应该暴露出UIlabel这种东西(个人想法)所以我用了这种方法对label做了一层处理而真正的label是private的.还有一点要说的是第二个框的代码,我构建UI的位置是在viewdidMovetoSuperView中的时候,是因为放在初始化中会导致设置的字体颜色无效,因为给label设置颜色的位置在configUI方法中.在初始化中调用会导致先调用了configUI,然后才给left or right Color 赋值.点击的事件我选择用代理方法,参数是btn选中的状态ture or false.<br/>
 2. 封装下拉控件<br/>
 <img src="media/14924176125873/14924213229065.jpg" alt=""/><br/>
@@ -125,7 +129,7 @@
 
 <h4 id="toc_3">总结</h4>
 
-<p>其实这个控件的分装没有太大的难度,我自己觉得通过这次封装,一是将两个控件封装到一起,并且其中任何一个控件又都可以单独拿出来用的这种封装方式有了一定的认识,二是如何封装出优雅的可用的控件,不该暴露的属性就不要多暴露,让使用者一目了然,初始化的方法参数能少则少,<br/>
+<p>其实这个控件的分装没有太大的难度,我自己觉得通过这次封装,一是将两个控件封装到一起,并且其中任何一个控件又都可以单独拿出来用的这种封装方式有了一定的认识,二是如何封装出优雅的可用的控件,不该暴露的属性就不要多暴露,让使用者一目了然,初始化的方法参数能少则少,参数越多,使用难度越大,一起不必要的参数都设置为有默认值可配置的形式.<br/>
 代码我会在稍后传到我的github上<br/>
 <a href="https://github.com/RookieNeo">传送门</a></p>
 
@@ -139,6 +143,8 @@
   <div class="large-6 columns">
 	<div class="text-left" style="padding:15px 0px;">
 		
+	        <a href="14936932217611.html"  title="Previous Post: Swift的一种常用类型">&laquo; Swift的一种常用类型</a>
+	    
 	</div>
   </div>
   <div class="large-6 columns">
