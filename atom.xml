@@ -4,7 +4,7 @@
   <title><![CDATA[RookieNeo]]></title>
   <link href="https://rookieneo.github.io/atom.xml" rel="self"/>
   <link href="https://rookieneo.github.io/"/>
-  <updated>2017-05-02T10:45:41+08:00</updated>
+  <updated>2017-05-02T10:47:11+08:00</updated>
   <id>https://rookieneo.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -12,6 +12,148 @@
   </author>
   <generator uri="http://www.mweb.im">MWeb</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Whats-new-in-swift-4]]></title>
+    <link href="https://rookieneo.github.io/14969065461458.html"/>
+    <updated>2017-06-08T15:22:26+08:00</updated>
+    <id>https://rookieneo.github.io/14969065461458.html</id>
+    <content type="html"><![CDATA[
+<p>Swift4终于到4了,这次升级对之前的版本有很好的兼容,而且也有一些很不错的API</p>
+
+<h4 id="toc_0">Strings</h4>
+
+<ol>
+<li>第一个就是String,增加了<code>&quot;&quot;&quot;</code>这个功能
+栗子:</li>
+</ol>
+
+<pre><code class="language-swift">let multilineString = &quot;&quot;&quot;
+        This is a multi-line string.
+    You don&#39;t have to escape &quot;quotes&quot; in here.
+    The position of the closing delimiter
+      controls whitespace stripping
+    &quot;&quot;&quot;
+print(multilineString)
+</code></pre>
+
+<p>打印出来的效果是这个样子的<br/>
+<img src="media/14969065461458/14969075270793.jpg" alt=""/><br/>
+没错,就是和你在代码里写的空行一模一样,不需要打换行符和空格了,不知道大家觉得如何,我是觉得非常好,因为...<br/>
+<img src="media/14969065461458/14969077073633.jpg" alt=""/><br/>
+我只是为了让网络请求的打印的日志好看一点,把代码写成这样也是很蓝瘦的,不过现在有&quot;&quot;&quot;就好了<br/>
+2. String终于有.count了 不容易,而且取subString什么的更容易了,我自己项目里的String的extension终于可以去掉了,人家写的确实比我好,嘿嘿</p>
+
+<pre><code class="language-swift">let greeting = &quot;Hello, 😜!&quot;
+let comma = greeting.index(of: &quot;,&quot;)!
+let substring = greeting[..&lt;comma]
+//print Hello
+</code></pre>
+
+<h4 id="toc_1">SubScripts</h4>
+
+<p>1.<br/>
+这个不用说,秒懂,感觉还好,以前用着也不费劲</p>
+
+<pre><code class="language-swift">let numbers = [1,2,3,4,5,6,7,8,9,10]
+numbers[5...] // instead of numbers[5..&lt;numbers.endIndex]
+//print Hello
+</code></pre>
+
+<h4 id="toc_2">Private declarations visible in same-file extensions</h4>
+
+<p>同一个文件下的Extensions中用到的Private属性可以不用改为filePrivate了,这个改动很好,因为同一个文件下的类的扩展,本身就同一个类,为什么我在类的方法中调用自己的属性,还需要用fileprivate,就很奇怪,当初我用的时候就感觉很难受,一使用extension就需要改权限...<br/>
+<img src="media/14969065461458/14969090403987.jpg" alt=""/><br/>
+如果在swift3中,stroage这个属性是要改成fileprivate的.</p>
+
+<h4 id="toc_3">Key Paths</h4>
+
+<p><img src="media/14969065461458/14969097853215.jpg" alt="" style="width:1860px;"/></p>
+
+<pre><code class="language-swift">sicp[keyPath: \Book.title]
+sicp.title
+//print same Structure and Interpretation of Computer Programs
+sicp[keyPath: \Book.title]
+sicp[keyPath: \Book.primaryAuthor.name]
+//print Harold Abelson
+</code></pre>
+
+<p>结构体中的属性可以像路径一样被取出<br/>
+当然也可以拼接路径 就像这样</p>
+
+<pre><code class="language-Swfit">let authorKeyPath = \Book.primaryAuthor
+type(of: authorKeyPath)
+let nameKeyPath = authorKeyPath.appending(path: \.name) // you can omit the type name if the compiler can infer it
+sicp[keyPath: nameKeyPath]
+//print  Harold Abelson
+</code></pre>
+
+<p>虽然我现在也不是太理解这样好处,但是能感觉出来这个一个很重大的改进,很多大神都可能会在这做文章,期待.</p>
+
+<h4 id="toc_4">Encoding and decoding 重头戏</h4>
+
+<p>这个是已经被公认的一个重大的提升,先举栗子</p>
+
+<p><img src="media/14969065461458/14969104547178.jpg" alt=""/><br/>
+这是一个结构体,有一点特殊,它遵循了Codable协议,hand数组中初始化了两个Card.<br/>
+然后~<br/>
+Encoding</p>
+
+<pre><code class="language-Swfit">var encoder = JSONEncoder()
+
+// Properties offered by JSONEncoder to customize output
+encoder.dataEncodingStrategy
+encoder.dateEncodingStrategy
+encoder.nonConformingFloatEncodingStrategy
+encoder.outputFormatting
+encoder.userInfo
+
+let jsonData = try encoder.encode(hand)
+String(data: jsonData, encoding: .utf8)
+//print &quot;[{\&quot;rank\&quot;:1,\&quot;suit\&quot;:\&quot;clubs\&quot;},{\&quot;rank\&quot;:12,\&quot;suit\&quot;:\&quot;hearts\&quot;}]&quot;
+//你没有看错  它是JSON了
+</code></pre>
+
+<p>Decoding</p>
+
+<pre><code class="language-Swift">let decoder = JSONDecoder()
+let decoded = try decoder.decode([Card].self, from: jsonData)
+// decoder 现在和截图中hand是一模一样的了666
+</code></pre>
+
+<p>系统的API帮我们做了json解析,这是非常好的.<br/>
+结构体是值类型,适用于单向数据流的数据传输方式,不过移动端的数据流一般都是双向的,意思就是你引用了别人的model,你把model中的数据给改了,那别人的model对应的数据也改了,因为大家的model用的都是类,而不是结构体,是引用类型,这样做在移动端是很方便的,但是也有很多弊端,比如你改了别人的数据,但是那哥们却不知道,这是很危险的,如果项目比较大,这老哥就为了知道是谁改了他数据就能找半天,但是结构体是值类型,就不会有这个问题,因为每次赋值,都是一个新的,这样就很安全,但是你每次改数据都需要调用别人的接口,这样就会很繁琐,而且数据的一致性和保持不了,在web前端有流行的框架中,react,vue(排名不分先后)都是单向数据,但是他们也有双向绑定的机制,也有很好的框架保证数据的准确.移动端这样的框架也有,只不过没有流行起来<br/>
+所以我就测试了一下类是不是也可以这样搞,结果是可以,皆大欢喜,引用类型也可以遵循Codable协议,来实现和JSON数据的互转.</p>
+
+<h4 id="toc_5">Generic subscripts 角标方法中可以使用泛型了</h4>
+
+<p>这是一个很好的消息,这会使得subscripts的使用变得更广泛,更已用,我在之前封装的UserDefaults方法中就因为角标方法中不能使用泛型限制了我的思路,现在终于可以实现了. </p>
+
+<pre><code class="language-Swift">subscript&lt;T&gt;(key: String) -&gt; T? {
+        return storage[key] as? T
+    }
+</code></pre>
+
+<p>相信用过subscipt方法的看到这个栗子会很激动,没用过的,也感受不到Swift3中不能使用泛型的困扰了<br/>
+先更新到这个...苦逼的程序员要改bug了,会持续更新.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Swift中对UserDefaults的封装]]></title>
+    <link href="https://rookieneo.github.io/14956811508929.html"/>
+    <updated>2017-05-25T10:59:10+08:00</updated>
+    <id>https://rookieneo.github.io/14956811508929.html</id>
+    <content type="html"><![CDATA[
+<p>Founddation中UserDefaults是一种很轻量化的本地化工具,实际开发中经常会使用,由于苹果中很多类库还没有用Swift重写,所以在Swift中用UserDefaults就显示不是很Swift,还是OC的感觉,所以我就想对UserDefaults进行一次封装,让它更Swift,用起来更方便.我最早由这种想法实在Swift2的时候,那时候就感觉用起来不是很方便了,但是没有多想,之后又看到了一篇文章<a href="http://radex.io/swift/nsuserdefaults/">传送门</a>,它是用Swift中subscript的方法对NSUserDefaults进行了封装,Swift中,Dic[key],Array[index],都是使用了subscript方法.我就是参照这位外国友人的思路进行了封装.</p>
+
+<h2 id="toc_0">[subscript] + 泛型 的方式</h2>
+
+<p>这是我最开始的设计思路,先看代码 ...有时间在更新吧 先到这里</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Swift的一种常用类型]]></title>
