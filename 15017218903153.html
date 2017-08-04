@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Swift - RookieNeo
+  基于Alamofire网络库的二次封装 - RookieNeo
   
   </title>
  <meta name="description" content="学而不思则罔,思而不学则殆">
@@ -103,14 +103,10 @@
             </div>
             <div class="large-9 medium-9 columns">
 
- 
+ <div class="markdown-body">
+<h1>基于Alamofire网络库的二次封装</h1>
 
-
-	
-		<div class="markdown-body">
-		<h1>基于Alamofire网络库的二次封装</h1>
-
-		<p>Alamofire作为一个Swift的网络框架被开发者们大量使用在自己的项目中,但处于公司的业务,统一处理,后期换库  <del>但实际可能永远不会</del> 等多方面的考虑,一般都会对其进行二次封装.由于公司项目的网络框架是我写的,并进过了多次重构,优化,我觉得可以满足大部分的日常需要,所以我准备拿出来和大家讨论一下.</p>
+<p>Alamofire作为一个Swift的网络框架被开发者们大量使用在自己的项目中,但处于公司的业务,统一处理,后期换库  <del>但实际可能永远不会</del> 等多方面的考虑,一般都会对其进行二次封装.由于公司项目的网络框架是我写的,并进过了多次重构,优化,我觉得可以满足大部分的日常需要,所以我准备拿出来和大家讨论一下.</p>
 
 <h4 id="toc_0">1</h4>
 
@@ -202,14 +198,42 @@ default就是核心层的单例</p>
 <p>到目前为止,我的这个封装完全满足了项目的需求,但是也有在考虑要不要增加返回数据的类型,现在我只支持返回字典,但是这样做我也是有自己的想法的,因为一个项目业务端的解析方式大都很固定,我给他们暴露了太多的接口,反而会导致业务端调用的混乱,毕竟我是二次封装,如果写的太多了,就不是二次封装了.下一篇博客,我会分析Alamofire的源码,并提出我的疑惑,欢迎来撕~</p>
 
 
-		</div>
-	
+</div>
 
- 
-	
+<br /><br />
+<hr />
 
-  
-  
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
+		
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
+		
+	        <a href="15008764200399.html" 
+	        title="Next Post: Swift中对于有先后顺序的网络请求的优化">Swift中对于有先后顺序的网络请求的优化 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
+
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
+
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '15017218903153.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
 </div></div>
 
 
