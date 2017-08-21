@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Swift的一种常用类型 - RookieNeo
+  从学习RunLoop到研究线程 - RookieNeo
   
   </title>
  <meta name="description" content="学而不思则罔,思而不学则殆">
@@ -112,16 +112,36 @@
             <div class="large-9 medium-9 columns">
 
  <div class="markdown-body">
-<h1>Swift的一种常用类型</h1>
+<h1>从学习RunLoop到研究线程</h1>
 
-<p><img src="media/14936911497977/14936911882116.jpg" alt=""/></p>
+<h1 id="toc_0"><img src="media/15032778472509/15032778518396.jpg" alt=""/></h1>
 
-<h6 id="toc_0">这是我在公司项目用到的一种用于网络请求返回数据的类型,我第一次见到它是Alamofire的源码中,他对网络请求的数据就进行了一种这样的封装,当时就觉得不错,不过并没有在意,后来又在喵神翻译的swift进阶中又看了,于是就抱着试一试的态度用一下,果然效果还是不错的.</h6>
+<p><a href="http://v.youku.com/v_show/id_XODgxODkzODI0.html">sunnyxx的视频,说的应该是比较明白了,但是我还是有点理解不上去,主要还是没有这种设计的思维</a></p>
 
-<h5 id="toc_1">我个人认为这是一个加强版的可选类型,其实可选类型就是一个枚举值,有value和nil两个枚举值,这个DataResult也是一个枚举值,有error和value两种枚举值,区别是可选类型对返回时nil的情况并不在意,更在意的是结果,只要告诉我有或者没有就可以了,而DataResult类型比可选类型更重视返回错误时的情况,所以我觉得这很适合用在网络请求的返回值中,有数据的时候就是成功,没有数据的时候就是失败,失败的时候返回error类型给业务层做相应的处理.</h5>
+<h4 id="toc_1">主队列同步执行为什么会死锁</h4>
 
-<p><img src="media/14936911497977/14936925384241.jpg" alt=""/><br/>
-这是业务层的使用情况,data就是DataResult类型,也可以使用if else 还做处理,这就是extension中isSuccess和isFailure的作用.</p>
+<blockquote>
+<p>互相等待对方完成，举个简单例子好了。当打印了1以后，主线程调用dispatch_sync这个函数，当这个函数返回的时候主线程才能往下执行。但dispatch_sync返回的条件是里面的Block返回，里面的Block是不会执行的，因为它是被插到主队列最后执行，然而因为dispatch_sync无法返回，所以主队列无法执行到最后一个任务。</p>
+</blockquote>
+
+<pre><code>    NSLog(@&quot;1&quot;);
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        NSLog(@&quot;2&quot;);
+    });
+    NSLog(@&quot;3&quot;);
+</code></pre>
+
+<p>主线程中 执行代码本身就是一个任务.在添加NSLog2任务的时候 任务2加再任务一之后,但是因为必须同步执行,所以任务2要执行完毕 才可执行任务1,任务1又必须执行完毕才可以执行任务2</p>
+
+<h4 id="toc_2">串行队列中同步和异步的区别</h4>
+
+<p>简单的说同步和异步的区别就是是否会阻塞线程<br/>
+<img src="media/15032778472509/15033020499481.jpg" alt=""/><br/>
+上面的代码中,通过断点可以看出,在同步执行的时候,第一个for循环不执行完毕,21行的断点是不会走的,说明线程是阻塞状态.当第一个for循环执行完毕之后,才会到第21行的断点,然后在执行第二个for循环.<br/>
+如果把sync 改为async 异步的时候将四个断点按顺序牌号,执行的顺序是1324,无论要执行的代码是什么,都不会影响线程的阻塞.<br/>
+所以这就可以解释为什么不能再主线程中同步执行代码,主线程中,执行整个代码是一项任务,如果在添加同步任务的话,同步任务必须要执行完毕才可以向下执行,但是整个代码又必须执行完毕才可以执行同步任务(因为在串行队列中,同步任务在整个任务之后).<br/>
+但是不在主线程中就不会出现这种情况,因为子线程中没有要执行整个代码的任务.所以它可以随时阻塞下来,等任务一个任务执行完毕在执行其他的任务.<br/>
+总结,主线程中不能执行同步任务的主要原因就是主线程是运行程序的线程,它阻塞了,程序就停了...</p>
 
 
 </div>
@@ -133,15 +153,13 @@
   <div class="large-6 columns">
 	<div class="text-left" style="padding:15px 0px;">
 		
-	        <a href="14956811508929.html"  title="Previous Post: Swift中对UserDefaults的封装">&laquo; Swift中对UserDefaults的封装</a>
-	    
 	</div>
   </div>
   <div class="large-6 columns">
 	<div class="text-right" style="padding:15px 0px;">
 		
-	        <a href="14924176125873.html" 
-	        title="Next Post: 按钮加下拉弹框控件的封装">按钮加下拉弹框控件的封装 &raquo;</a>
+	        <a href="15026719129123.html" 
+	        title="Next Post: 从切圆角引发的对iOS动画框架的探究">从切圆角引发的对iOS动画框架的探究 &raquo;</a>
 	    
 	</div>
   </div>
@@ -173,7 +191,7 @@ s.setAttribute('data-timestamp', +new Date());
 </div>
 <script type="text/javascript">
 	$(function(){
-		var currentURL = '14936932217611.html';
+		var currentURL = '15032778472509.html';
 		$('#side-nav a').each(function(){
 			if($(this).attr('href') == currentURL){
 				$(this).parent().addClass('active');
