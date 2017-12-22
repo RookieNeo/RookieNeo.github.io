@@ -4,7 +4,7 @@
   <title><![CDATA[RookieNeo]]></title>
   <link href="https://rookieneo.github.io/atom.xml" rel="self"/>
   <link href="https://rookieneo.github.io/"/>
-  <updated>2017-08-23T13:40:12+08:00</updated>
+  <updated>2017-12-22T14:46:43+08:00</updated>
   <id>https://rookieneo.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -108,9 +108,9 @@
     }
 </code></pre>
 
-<p>跑起来的效果是<br/>
-<img src="media/15113233292599/haha.gif" alt="haha"/><br/>
-作为一个第一版的Demo,它是可以接受的.当然我们还需要增加许多方法,比如<code>func beginHeaderRefreshing()</code> <code>func endHeaderRefreshing()</code></p>
+<p>跑起来的效果是<img src="media/15113233292599/normal.gif" alt="norma"/></p>
+
+<p>作为一个第一版的Demo,它是可以接受的.当然我们还需要增加许多方法,比如<code>func beginHeaderRefreshing()</code> <code>func endHeaderRefreshing()</code></p>
 
 <h4 id="toc_1">单一职责,功能拆分,易扩展,去依赖</h4>
 
@@ -279,6 +279,7 @@ refreshView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLay
 <p>说一下继承,当这篇博客要写完的时候,我在发现了我当初那个问题的答案,至少我心里是满意的答案,就是继承,可能现在提出继承大家会不屑一顾,在这个面向协议,面向切面横行的年代,提出继承未免有点过时了.也正因为我的这个思想导致我一开始设计的时候就总想着面向协议,现在回头想一想,那个manger没有引用,被释放了,其实也说明它是个累赘,或者说它是多余的,但是我们的功能还必须要拆分,这时候我就应该想到继承了,basicView里的私有方法监听,并调用public的方法,public function 负责的实现由继承basicView的View自己来override,子View只在乎动画的效果.</p>
 
 <p>继承确实会有很多问题,比如经典的菱形问题,也有很多诟病,但是任何一种思想,一种设计模式,存在就一定是有意义,它们都各有优缺点,这世界本就没有完美的事物,我们在使用的时候需要权衡利弊选择最合适的.<br/>
+最后~<a href="https://github.com/RookieNeo/NeoRefresh.git">Github地址</a><br/>
 </font></p>
 
 ]]></content>
