@@ -4,7 +4,7 @@
   <title><![CDATA[RookieNeo]]></title>
   <link href="https://rookieneo.github.io/atom.xml" rel="self"/>
   <link href="https://rookieneo.github.io/"/>
-  <updated>2017-12-22T14:46:43+08:00</updated>
+  <updated>2017-12-22T15:01:30+08:00</updated>
   <id>https://rookieneo.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -19,7 +19,8 @@
     <updated>2017-11-22T12:02:09+08:00</updated>
     <id>https://rookieneo.github.io/15113233292599.html</id>
     <content type="html"><![CDATA[
-<p><font color=#586E75 size=3 ><br/>
+<p><img src="media/15113233292599/refresh_arrow@2x%2014-38-10-573.png" alt="refresh_arrow@2x 14-38-10-573"/><br/>
+<font color=#586E75 size=3 ><br/>
 最近开始做新项目,需要在Swift项目中使用下拉刷新控件,之前的项目有用过一起其他的三方库,比如MJRefresh,CRRefresh,但是MJ是OC的,总是感觉一个纯Swift项目用OC的不太爽,CR的库没有升级到Swift4,由于是新项目,直接上的Swift4,也不能用,所以就打算自己封装一个.</p>
 
 <p>其实下拉刷新这种常用的控件Github上有很多都封装的不错,但是在我看来,他们都太重了,大部分功能都是我不需要的,至少现在不需要,所以我打算封装一个简单灵活的(适应现在的需求就可以),易扩展的(未来有新的需求也可以很好的实现).</p>
