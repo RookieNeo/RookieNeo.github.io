@@ -47,6 +47,8 @@
         <li><label>Swift</label></li>
 
           
+            <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
+          
             <li><a title="对Swift写时复制技术的理解" href="15034498083541.html">对Swift写时复制技术的理解</a></li>
           
             <li><a title="从切圆角引发的对iOS动画框架的探究" href="15026719129123.html">从切圆角引发的对iOS动画框架的探究</a></li>
@@ -84,6 +86,8 @@
                     
                       <li class="side-title"><span>Swift</span></li>
                         
+                          <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
+                        
                           <li><a title="对Swift写时复制技术的理解" href="15034498083541.html">对Swift写时复制技术的理解</a></li>
                         
                           <li><a title="从切圆角引发的对iOS动画框架的探究" href="15026719129123.html">从切圆角引发的对iOS动画框架的探究</a></li>
@@ -118,7 +122,148 @@
 
 <h2 id="toc_0">[subscript] + 泛型 的方式</h2>
 
-<p>这是我最开始的设计思路,先看代码 ...有时间在更新吧 先到这里</p>
+<p>这是我最开始的设计思路,先看代码</p>
+
+<pre><code class="language-Swift">protocol UserDefaultProtocol {
+    func getKey() -&gt; String
+}
+enum DefaultsKey: String,UserDefaultProtocol {
+    case token
+    case name
+    case mobile
+    func getKey() -&gt; String {
+        return self.rawValue
+    }
+}
+public let Defaults = UserDefaults.standard
+extension UserDefaults {
+    
+    subscript(key: UserDefaultProtocol) -&gt; Fakegenericity {
+        return Fakegenericity(self, key.getKey())
+    }
+    subscript(key: UserDefaultProtocol) -&gt; Any?{
+        get{
+            let genericity : Fakegenericity = self[key]
+            return genericity
+        }
+        set{
+            guard let newValue = newValue else {
+                removeObject(forKey: key.getKey())
+                return
+            }
+            switch newValue {
+            case let v as Double:
+                self.set(v, forKey: key.getKey())
+            case let v as Int:
+                self.set(v, forKey: key.getKey())
+            case let v as Bool:
+                self.set(v, forKey: key.getKey())
+            case let v as URL:
+                self.set(v, forKey: key.getKey())
+            default:
+                self.set(newValue, forKey: key.getKey())
+            }
+        }
+    }
+    ///直接根据key取int  double等  就算取不到  也会返回 0  当有要存储0的需求时候  会有问题  所以 用过根据 object 去数据转 nsnumer  判断number?  使取 bool int等类型时  没有值会返回nil
+    func numberForKey(_ key: String) -&gt; NSNumber? {
+        return object(forKey: key) as? NSNumber
+    }
+    
+    /// Returns `true` if `key` exists
+    func hasKey(key: UserDefaultProtocol) -&gt; Bool {
+        return object(forKey: key.getKey()) != nil
+    }
+    
+    func removeAll(){
+        for(key,_) in dictionaryRepresentation() {
+            removeObject(forKey: key)
+        }
+    }
+    func remove(key: UserDefaultProtocol){
+        removeObject(forKey: key.getKey())
+    }
+    class Fakegenericity {
+        fileprivate let defaults: UserDefaults
+        fileprivate let key: String
+        
+        fileprivate init(_ defaults: UserDefaults, _ key: String) {
+            self.defaults = defaults
+            self.key = key
+        }
+        
+        // MARK: only - get
+        public var object: Any? {
+            return defaults.object(forKey: key)
+        }
+        
+        public var string: String? {
+            return defaults.string(forKey: key)
+        }
+        
+        public var array: [Any]? {
+            return defaults.array(forKey: key)
+        }
+        
+        public var dictionary: [String: Any]? {
+            return defaults.dictionary(forKey: key)
+        }
+        
+        public var data: Data? {
+            return defaults.data(forKey: key)
+        }
+        
+        //        public var date: Date? {
+        //            return object as? Date
+        //        }
+        
+        public var number: NSNumber? {
+            return defaults.numberForKey(key)
+        }
+        
+        public var int: Int? {
+            return number?.intValue
+        }
+        
+        public var double: Double? {
+            return number?.doubleValue
+        }
+        
+        public var bool: Bool? {
+            return number?.boolValue
+        }
+        
+        
+        public var stringValue: String {
+            return string ?? &quot;&quot;
+        }
+        
+        public var arrayValue: [Any] {
+            return array ?? []
+        }
+        
+        public var dictionaryValue: [String: Any] {
+            return dictionary ?? [:]
+        }
+        
+        public var dataValue: Data {
+            return data ?? Data()
+        }
+        
+        public var intValue: Int {
+            return int ?? 0
+        }
+        
+        public var doubleValue: Double {
+            return double ?? 0
+        }
+        
+        public var boolValue: Bool {
+            return bool ?? false
+        }
+    }
+}
+</code></pre>
 
 
 </div>
