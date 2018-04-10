@@ -125,13 +125,13 @@
 <p>最近公司从https的认证下来了,所以大家就都开始大张旗鼓的切换成https<del>其实就是http后面加一个s</del>,都说https安全,但是到底为什么安全,怎么做到了安全,我一直都模棱两可的,让我感觉很难受.所以还是想认真学习一下.<br/>
 还是老规矩,先从表象入手(在iOS中的实现),在分析内部(https到底是什么)非iOSCoder直接跳过第一节</p>
 
-<h3 id="toc_0">iOS中https的使用</h3>
+<h3 id="toc_0">1  iOS中https的使用</h3>
 
-<h5 id="toc_1">1非自签证书,也就是从CA机构颁发的(花了银子的)</h5>
+<h5 id="toc_1">非自签证书,也就是从CA机构颁发的(花了银子的)</h5>
 
 <p>手机系统或是浏览器中已经存储了CA机构的根证书,所以URLSession中已经对非自签证书做了处理,我们要做的就是在http后面+s it&#39;s work! 至于这个验证机制咱们放到后面说,一点点来~</p>
 
-<h5 id="toc_2">2自签名证书的验证.有两种方式,使用Alamofire开源网络框架和自己写,但是表现在代码上都不复杂,咱们通过Alamofire的源码来看一下具体的实现方式.(手写其实就是把它的实现<del>粘贴</del>出来,所以我们只讲一下Alamofire就行)</h5>
+<h5 id="toc_2">自签名证书的验证.有两种方式,使用Alamofire开源网络框架和自己写,但是表现在代码上都不复杂,咱们通过Alamofire的源码来看一下具体的实现方式.(手写其实就是把它的实现<del>粘贴</del>出来,所以我们只讲一下Alamofire就行)</h5>
 
 <p><img src="media/15221395300202/15222174824879.jpg" alt=""/><br/>
 这是Alamofire关于https验证的具体实现.Alamofire是对URLSession的封装,所以它一定要实现URLSession的代理方法,这个代理就是URLSession做自签名证书验证的地方.注释中<code>Requests credentials from the delegate in response to a session-level authentication request from the remote server.</code>在代理中请求凭证,响应远程服务器的会话层验证,这英文虽然翻译不太明白,但大体的意思就是这里做验证.继续~<font color=#ff6ec7><code>sessionDidReceiveChallengeWithCompletion</code>,<code>sessionDidReceiveChallenge</code></font>这两个闭包暂时不看,它的作用是如果你使用了Alamofire,你还想自定义验证,那你就实现这两个闭包中的一个.就不会走默认的验证方式.但实际当你看会了下面的默认验证方式也就知道怎么去自定义验证了.<br/>
@@ -184,7 +184,7 @@ API 素质4连儿 这些都是做准备工作,不用的验证方式需要做不�
 <img src="media/15221395300202/15232608818834.jpg" alt=""/><br/>
 这里是最终评估证书的地方.这样一个完整的单向验证就完成了.这里面一连调用了N个API,具体的实现其实我也不知道(我也查阅了文档,由于英文能力有限,所以我就不瞎说了,大家如果有兴趣可以自己查阅一下),但是如果我们理解Https的原理,那也就知道这些API内部在做什么了.(知道了Alamofire的实现,自定义实现相信大家也就会了)</p>
 
-<h3 id="toc_3">HTTPS的原理</h3>
+<h3 id="toc_3">2 HTTPS的原理</h3>
 
 <h4 id="toc_4">HTTPS的组成</h4>
 
