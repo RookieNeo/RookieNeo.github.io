@@ -1,0 +1,1486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[RookieNeo]]></title>
+  <link href="https://rookieneo.github.io/atom.xml" rel="self"/>
+  <link href="https://rookieneo.github.io/"/>
+  <updated>2018-09-12T17:58:34+08:00</updated>
+  <id>https://rookieneo.github.io/</id>
+  <author>
+    <name><![CDATA[]]></name>
+    
+  </author>
+  <generator uri="http://www.mweb.im">MWeb</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[沙漏动画]]></title>
+    <link href="https://rookieneo.github.io/15367255656449.html"/>
+    <updated>2018-09-12T12:12:45+08:00</updated>
+    <id>https://rookieneo.github.io/15367255656449.html</id>
+    <content type="html"><![CDATA[
+<p>最近有个新的需求，要做一个沙漏动画。说实话当我看到设计师给我的效果时候，确确实实难到我了。我以前很少做动画相关的东西，接触的也都比较简单。但是我还是比较高兴的，因为我非常喜欢这种免费的学习的机会，每天都做一些会做的东西就很没劲。废话不多说，开始吧。</p>
+
+<h4 id="toc_0">先看下效果</h4>
+
+<p><img src="media/15367255656449/shdowClocktop5.gif" alt="shdowClocktop5"/></p>
+
+<p>我刚看到的时候，其实是无从下手的，根本不知道从哪里开始，后来一个朋友和我说，你应该把它分解开，一起看肯定很麻烦，比如先实现沙漏里上半部分沙堆的动画，在实现下半部分，在实现沙子的，最后做旋转。一点点来。这么说完，我觉得还是比较好的，把难得问题分解成一个个小问题，逐个解决，而且这也可以保证每个小模块之间相互不影响，你一个问题设计的不好，不会牵连其他的，后期优化也方便，最后的动画是由这些动画组合上的。那开始吧~</p>
+
+<h4 id="toc_1">沙堆下半部分动画</h4>
+
+<p>由于上下部分其实是一个动画，所以只要实现了一个，另一个也就完成了。<br/>
+<img src="media/15367255656449/15367262925821.jpg" alt="" style="width:608px;"/></p>
+
+<p>假设粉色部分是沙漏的底部，灰色的是沙堆，那这个动画应该是灰色layer从粉色layer的底部移动到上部的过程，因为我们这个是不规则的图形，所以必须使用layer画出一个不规则的layer。其实我一开始的想法很简单，就是用两张图片，做位移，但实际的效果是：<br/>
+<img src="media/15367255656449/15367263814233.jpg" alt="" style="width:516px;"/></p>
+
+<p>向上的动画还好说，向下的话，沙堆下降的时候超出去的部分会展示出来，相信说到这大家也就明白了，这个不多解释了。至于背景色填充，遮罩这种的方案，就更不符合需求了，一个沙漏肯定是透明的，你加上底色，如果你这个页面的底色和你的这个底层一样还好，要不一样，那多难看。<br/>
+所以一定要用layer来做。</p>
+
+<pre><code class="language-Swift">class SandBoxBottomLayer: CALayer {
+    
+    let sublayer1 = CAShapeLayer()
+    
+    init(frame : CGRect) {
+        super.init()
+        self.frame = frame
+        self.configUI()
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: self.frame.width/2, y: 0))
+        path.addLine(to: CGPoint(x: self.frame.width, y: self.frame.height*1/3))
+        path.addLine(to: CGPoint(x: self.frame.width, y: self.frame.width))
+        path.addLine(to: CGPoint(x: 0, y: self.frame.height))
+        path.addLine(to: CGPoint(x: 0, y: self.frame.height*1/3))
+        path.addLine(to: CGPoint(x: self.frame.width/2, y: 0))
+        path.close()
+        let sublayer = CAShapeLayer()
+        sublayer.masksToBounds = true
+        sublayer.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+        sublayer.path = path.cgPath
+        //我觉得加背景色反而不是很好看呢
+//        self.backgroundColor = UIColor(red: 232/255.0, green: 159/255.0, blue: 159/255.0, alpha: 1).cgColor
+        self.mask = sublayer
+        
+        sublayer1.frame = CGRect(x: 0, y: self.frame.height, width: self.frame.width, height: self.frame.height)
+        sublayer1.path = path.cgPath
+        sublayer1.fillColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        
+        
+        self.addSublayer(sublayer1)
+    }
+}
+</code></pre>
+
+<p>这里用到了一个比较重要的属性就是CALayer的mask，mask其实也是一个CALayer，它就是整个Layer的可视部分，所以大家应该知道为什么View做圆角的时候需要开启masktobounds了。CAShapeLayer是CALayer的子类，它可以填充颜色，还有path这个属性，可以用贝塞尔曲线画出一个图形，创建一个CAShapeLayer然后设置它的path等于我们画好的沙堆的图形，最后在让CALayer的mask=CASHaperLayer，这样超出的部分就不会看到了。一个透明的不规则的CALayer就👌了。然后在用刚才的path同样的方式做一个沙堆layer，放在父layer的底部。<br/>
+下面就是动画了。</p>
+
+<pre><code class="language-Swift">func startAnimation() {
+        sublayer1.removeAllAnimations()
+        let animation = CAKeyframeAnimation(keyPath: &quot;position&quot;)
+        animation.keyTimes = [NSNumber(value: 0.0),NSNumber(value: SandClockView.animationTimeWithOutRotate/SandClockView.animationTime),NSNumber(value: 1.0)]
+        animation.values = [CGPoint(x: self.frame.width/2, y: self.frame.height*1.5),CGPoint(x: self.frame.width/2, y: self.frame.height/2),CGPoint(x: self.frame.width/2, y: self.frame.height/2)]
+        animation.duration = SandClockView.animationTime
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.timingFunctions = [CAMediaTimingFunction(controlPoints: 0.8, 0, 1, 1)]
+        animation.fillMode = kCAFillModeForwards
+        sublayer1.add(animation, forKey: &quot;&quot;)
+    }
+</code></pre>
+
+<h5 id="toc_2">跑起来的效果是</h5>
+
+<p><img src="media/15367255656449/shdowClocktop.gif" alt="shdowClocktop"/></p>
+
+<p>这里就是一个关键帧动画，说白了就是一个分时间段控制动画进程的类，之所以用它是因为我们要和其他动画串联起来，从沙漏开始到全部漏完，然后沙漏旋转，这是一个完整的动画。时间是6.5秒，其中6秒是沙漏的动画，0.5秒是旋转的。所以大家看我的keytime和values的设置就明白什么意思了，在0-沙漏动画部分就把位移做完，剩下的时间位移不变。timingFunctions这个属性可以提供一个贝塞尔曲线控制动画的随着时间完成的速度，系统有几个预设好的 ，easeinout这种的。不过我们的设计师觉得那种效果不太满意，我就自己写了一个。简单说下这个属性。<br/>
+<img src="media/15367255656449/10.1.jpeg" alt="10.1"/></p>
+
+<p>CAMediaTimingFunction这个类的初始化方法是传两个点。没有这两个点的时候，动画是线性的，斜率固定。但是当我们加入两个控制点的时候。<br/>
+<img src="media/15367255656449/10.2.jpeg" alt="10.2"/><br/>
+斜率就发生变化了，根据斜率来开，动画的速度是先快后慢，在快的过程。<br/>
+我传的两个点是（0.8，0），（1，1）了，所以这个贝尔赛曲线的斜率一定是刚开始很慢，后来飙升这么一个过程。那动画也会这样，一开始不动，后来越来越快。我觉得设计师这么做很合理，这事一个loading图，先快后面的体验是很好的，相信大家都体验过加载网页时候那个loading条线快后慢的感觉吧。<br/>
+这个说完了那上部分的也一样就说完了。</p>
+
+<h4 id="toc_3">沙子动画</h4>
+
+<p>沙粒的动画在设计师给我的设计稿中已经给出了沙粒的个数，每个沙粒的开始下落的坐标和速度，所以这个相对好做。我把代码贴出来看下就好。</p>
+
+<pre><code class="language-Swift">class SandLayer: CALayer {
+    //第一组沙粒
+    let sand05Layer = CALayer()
+    let sand05Layer1 = CALayer()
+    //第二组沙粒
+    let sand03Layer = CALayer()
+    let sand03Layer1 = CALayer()
+    //第三组沙粒
+    let sand01Layer = CALayer()
+    let sand01Layer1 = CALayer()
+    init(frame: CGRect) {
+        super.init()
+        self.frame = frame
+        self.configUI()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        sand05Layer.frame = CGRect(x: 0, y: -3, width: 1, height: 1)
+        sand05Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand05Layer)
+        sand05Layer1.frame = CGRect(x: 1, y: -10, width: 1, height: 2)
+        sand05Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand05Layer1)
+        
+        sand03Layer.frame = CGRect(x: 0, y: -10, width: 1, height: 2)
+        sand03Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand03Layer)
+        sand03Layer1.frame = CGRect(x: 1, y: -3, width: 1, height: 1)
+        sand03Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand03Layer1)
+//
+        sand01Layer.frame = CGRect(x: 0, y: -3, width: 1, height: 1)
+        sand01Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand01Layer)
+        sand01Layer1.frame = CGRect(x: 1, y: -10, width: 1, height: 2)
+        sand01Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand01Layer1)
+    }
+    func startAnimation() {
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime05, layer: sand05Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime05, layer: sand05Layer1)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime03, layer: sand03Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime03, layer: sand03Layer1)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime01, layer: sand01Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime01, layer: sand01Layer1)
+    }
+    private func addAnimation(withDuration duration: CFTimeInterval,layer: CALayer){
+        layer.removeAllAnimations()
+        let animation = CABasicAnimation(keyPath: &quot;position&quot;)
+        animation.fromValue = layer.position
+        animation.toValue = CGPoint(x: layer.position.x, y: self.frame.height)
+        animation.duration = duration
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.valueFunction = CAValueFunction(name: kCAMediaTimingFunctionLinear)
+        animation.fillMode = kCAFillModeForwards
+        layer.add(animation, forKey: nil)
+    }
+}
+</code></pre>
+
+<p>6个沙粒的位移动画而已。<br/>
+<img src="media/15367255656449/shdowClocktop1.gif" alt="shdowClocktop1"/></p>
+
+<h4 id="toc_4">组合+旋转动画</h4>
+
+<pre><code class="language-Swift">class SandClockView: UIView {
+    static let animationTime = 6.5                  //沙漏滴完+旋转的时间
+    static let animationTimeWithOutRotate = 6.1     //沙漏滴完的时间
+    static let sandAnimationTime05 = 0.5            //沙子下坠时间 共3中
+    static let sandAnimationTime03 = 0.3
+    static let sandAnimationTime01 = 0.1
+    let boxWidth: CGFloat = 34
+    let boxHeight: CGFloat = 25
+    lazy var topLayer: SandBoxTopLayer = {
+        let layer = SandBoxTopLayer(frame: CGRect(x: 7, y: 3, width: boxWidth , height: boxHeight))
+        return layer
+    }()
+    lazy var bottomLayer: SandBoxBottomLayer = {
+        let layer = SandBoxBottomLayer(frame: CGRect(x: 7, y: self.frame.height/2-1, width: boxWidth, height: boxHeight))
+        return layer
+    }()
+    lazy var sandLayer: SandLayer = {
+        let layer = SandLayer(frame: CGRect(x: self.frame.width/2-1, y: self.frame.height/2, width: 2, height: 25))
+        return layer
+    }()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.configUI()
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        self.layer.addSublayer(bottomLayer)
+        self.layer.addSublayer(sandLayer)
+        self.layer.addSublayer(topLayer)
+        let imageView = UIImageView(image: UIImage(named: &quot;sandclock_bg&quot;))
+        imageView.frame = self.bounds
+        self.addSubview(imageView)
+    }
+    
+}
+</code></pre>
+
+<p>在一个View上把这些动画组合上,在加上一个沙漏的背景框，就可以开始动画了，如果你不喜欢用UIImageView的话这个沙漏自己用贝塞尔曲线画出来也不难。</p>
+
+<pre><code class="language-Swift">func startAnimation(){
+        topLayer.startAnimation()
+        bottomLayer.startAnimation()
+        sandLayer.startAnimation()
+        self.layer.removeAllAnimations()
+        let animation = CAKeyframeAnimation(keyPath: &quot;transform.rotation.z&quot;)
+        animation.keyTimes = [NSNumber(value: 0.0),NSNumber(value: SandClockView.animationTimeWithOutRotate/SandClockView.animationTime),NSNumber(value:0.97),NSNumber(value: 1.0)]
+        animation.values = [0,0,Double.pi+0.07,Double.pi]
+        animation.duration = SandClockView.animationTime
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.timingFunctions = [CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)]
+        animation.fillMode = kCAFillModeForwards
+        self.layer.add(animation, forKey: &quot;&quot;)
+    }
+</code></pre>
+
+<p>开始动画中调用所有组件化的动画开始，并且加上当前View旋转动画。同样时间要配合上。<br/>
+我这个旋转动画本来享用springanimation来做，但是没找到自身旋转的API，所以只能先用这种方式来实现了。不过效果也还不错，gif可能看着有点卡，实际的效果好很多。每个动画但看起来都很简单，很也很难看，但是组合起来，效果就很不错了。<br/>
+<img src="media/15367255656449/shdowClocktopB.gif" alt="shdowClocktopB"/><br/>
+这是最终的效果。对比了一下和设计师给我的效果可以达到95%相似，有些地方的曲线，加速度，时间，他是直接用的fackbook的那套的准则的，给不出我具体的数值，所以还是有些偏差。不过他觉得已经可以接受了。但是达到100%才是我们程序员应该努力的方向。</p>
+
+<h4 id="toc_5">总结</h4>
+
+<p>这次算是对以前用的动画的一次复习，基本把很多动画都用了一遍。从无从下手到完成其实也就是一天半的时间。所以这种把大问题拆分成小问题，追个解决的思想还是很好用的。</p>
+
+<p>参考资料：<br/>
+<a href="https://zsisme.gitbooks.io/ios-/content/chapter10/custom-easing-functions.html">iOS核心动画</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于HTTPS的探究]]></title>
+    <link href="https://rookieneo.github.io/15221395300202.html"/>
+    <updated>2018-03-27T16:32:10+08:00</updated>
+    <id>https://rookieneo.github.io/15221395300202.html</id>
+    <content type="html"><![CDATA[
+<p>最近公司从https的认证下来了,所以大家就都开始大张旗鼓的切换成https<del>其实就是http后面加一个s</del>,都说https安全,但是到底为什么安全,怎么做到了安全,我一直都模棱两可的,让我感觉很难受.所以还是想认真学习一下.<br/>
+还是老规矩,先从表象入手(在iOS中的实现),在分析内部(https到底是什么)非iOSCoder直接跳过第一节</p>
+
+<h3 id="toc_0">1  iOS中https的使用</h3>
+
+<h5 id="toc_1">非自签证书,也就是从CA机构颁发的(花了银子的)</h5>
+
+<p>手机系统或是浏览器中已经存储了CA机构的根证书,所以URLSession中已经对非自签证书做了处理,我们要做的就是在http后面+s it&#39;s work! 至于这个验证机制咱们放到后面说,一点点来~</p>
+
+<h5 id="toc_2">自签名证书的验证.有两种方式,使用Alamofire开源网络框架和自己写,但是表现在代码上都不复杂,咱们通过Alamofire的源码来看一下具体的实现方式.(手写其实就是把它的实现<del>粘贴</del>出来,所以我们只讲一下Alamofire就行)</h5>
+
+<p><img src="media/15221395300202/15222174824879.jpg" alt="" style="width:975px;"/><br/>
+这是Alamofire关于https验证的具体实现.Alamofire是对URLSession的封装,所以它一定要实现URLSession的代理方法,这个代理就是URLSession做自签名证书验证的地方.注释中<code>Requests credentials from the delegate in response to a session-level authentication request from the remote server.</code>在代理中请求凭证,响应远程服务器的会话层验证,这英文虽然翻译不太明白,但大体的意思就是这里做验证.继续~<font color=#ff6ec7><code>sessionDidReceiveChallengeWithCompletion</code>,<code>sessionDidReceiveChallenge</code></font>这两个闭包暂时不看,它的作用是如果你使用了Alamofire,你还想自定义验证,那你就实现这两个闭包中的一个.就不会走默认的验证方式.但实际当你看会了下面的默认验证方式也就知道怎么去自定义验证了.<br/>
+从274行开始,<font color=#ff6ec7><code>if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust</code></font>,首先challenge的类型是<code>URLAuthenticationChallenge</code>,其中protectionSpace这个属性很重要,它是一个服务器受保护空间的一个具体的描述<br/>
+<img src="media/15221395300202/15222189824345.jpg" alt="" style="width:795px;"/><br/>
+我们要验证就需要这里面的信息.</p>
+
+<pre><code class="language-Swift">open var realm: String? { get }
+open var host: String { get }
+open var port: Int { get }
+open var proxyType: String? { get }
+open var `protocol`: String? { get }
+open var authenticationMethod: String { get }
+open var serverTrust: SecTrust? { get }
+</code></pre>
+
+<p>其中<code>authenticationMethod</code>是一个字符串,用它来分辨什么方式来验证.<del>不用枚举,我只能说apple也懒得改了</del>方式有很多,我们主要用NSURLAuthenticationMethodClientCertificate,验证客户端.NSURLAuthenticationMethodServerTrust,验证服务器.所以Alamofire中先是判断是不是验证服务器.如果是的.那么<code>let serverTrustPolicy = session.serverTrustPolicyManager?.serverTrustPolicy(forHost: host)</code><br/>
+<img src="media/15221395300202/15222196018465.jpg" alt="" style="width:1008px;"/><br/>
+作者用runtime的方式动态的给URLSession增加了一下属性来管理ServerTrustPolicy(安全策略)<code>objc_getAssociatedObject</code>在各种开源库中都有使用.因为在开发时我们可能要对应不同的服务器,那不同的服务器肯定有不同的安全策略,所以manger的作用就是我们访问不同的host的时候 找到对应的策略进行验证.</p>
+
+<p>ServerTrustPolicy这个枚举也是作者创建的,这里才是验证的核心,这个枚举的名字也很合理,验证服务器的策略.在这里作者充分利用了Swift的语言特性(这部分的实现在OC中有很大不同)-枚举关联对象<br/>
+<img src="media/15221395300202/15222957905304.jpg" alt="" style="width:837px;"/><br/>
+对应着5中种不同的验证方式<br/>
+1. Default 默认的策略,合法证书通过验证<br/>
+2. Revoked 对注销证书做的一种额外设置<br/>
+3. pinCertificates 验证指定的证书(是否验证证书链)<br/>
+4. pinPublicKeys 这个更上边的那个差不多<br/>
+5. disableEvaluation 该选项下，验证一直都是通过的，也就是说无条件信任<br/>
+6. customEvaluation 自定义验证，需要返回一个布尔类型的结果<br/>
+<code>ServerTrustPolicy</code>和<code>serverTrustPolicyManager</code>介绍完了,<code>serverTrustPolicyManager</code>是可选的,需要我们在初始换Session的时候赋值.<br/>
+<img src="media/15221395300202/15223166303303.jpg" alt="" style="width:703px;"/><br/>
+在外层初始化sessionManager的时候对manager赋值.这样在URLSession回调的时候,就可以根据不通的host取出不用的验证策略.<br/>
+呼~ 没想到这一行代码说了这么多.继续下一行<br/>
+<code>let serverTrust = challenge.protectionSpace.serverTrust</code><br/>
+上面说过这个challenge,我们来看一下这个serverTrust<br/>
+<img src="media/15221395300202/15223179147432.jpg" alt="" style="width:685px;"/><br/>
+它实际类型是SecTrustRef,那这个类型到底是干嘛的呢?<a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services/trust/creating_a_trust_object">Apple关于SecTrust的文档</a>,简单来说他就是对服务器传递给我们的证书和验证策略的一个封装.(Construct a trust object from a certificate and a policy.)我们需要的哪些服务器的信息,都得从这里获取.<br/>
+最后终于到了最关键的一步了<code>serverTrustPolicy.evaluate(serverTrust, forHost: host)</code>这里才是真正做证书验证的地方<code>serverTrustPolicy</code>就是那个枚举类型.<br/>
+<img src="media/15221395300202/15232557248912.jpg" alt="" style="width:993px;"/><br/>
+我们主要就说.pinCertificates的类型,理解了一个,其他的就都理解了.此枚举关联了3个参数,一个证书集合,是否验证证书链,是否验证host.<br/>
+<code>let policy = SecPolicyCreateSSL(true, validateHost ? host as CFString : nil)</code><br/>
+返回一个验证证书链策略的对象.<br/>
+<code>SecTrustSetPolicies(serverTrust, policy)</code><br/>
+(Set the policies for which trust should be verified)<br/>
+<code>SecTrustSetAnchorCertificates(serverTrust, pinnedCertificates as CFArray)</code><br/>
+(Sets the anchor certificates for a given trust.)<br/>
+<code>SecTrustSetAnchorCertificatesOnly(serverTrust, true)</code><br/>
+(Reenables trusting anchor certificates in addition to those passed in via the SecTrustSetAnchorCertificates API.)<br/>
+API 素质4连儿 这些都是做准备工作,不用的验证方式需要做不同的准备<br/>
+<img src="media/15221395300202/15232608818834.jpg" alt="" style="width:523px;"/><br/>
+这里是最终评估证书的地方.这样一个完整的单向验证就完成了.这里面一连调用了N个API,具体的实现其实我也不知道(我也查阅了文档,由于英文能力有限,所以我就不瞎说了,大家如果有兴趣可以自己查阅一下),但是如果我们理解Https的原理,那也就知道这些API内部在做什么了.(知道了Alamofire的实现,自定义实现相信大家也就会了)</p>
+
+<h3 id="toc_3">2 HTTPS的原理</h3>
+
+<h4 id="toc_4">HTTPS的组成</h4>
+
+<p>HTTPS = HTTP + SSL<br/>
+HTTP这个就不说了(不在本文讨论范围之内).<br/>
+SSL是在传输层上为网络通信提供数据安全和数据完整性的一种安全协议.<br/>
+那问题来了: 为什么协议?<br/>
+其实它之所以叫协议就是因为它和我们现实世界中的协议是一样的.它就是对某些事的一种规定,一种规范.你想玩游戏,你女朋友不让你玩,后来你俩达成一个协议,你给她买一个包,她就让你玩一天.就酱.那你想要你的网络传输的安全的,你就按SSL的协议规则做,我说一你就一 我说二 你就二 就完了.<br/>
+我们都知道HTTP协议是明文的,也就意味着你传输的数据,谁都可以看到,谁都可以修改,这很不安全.<br/>
+于是大家就想用加密算法,把发送的数据加密,等接受到后再用秘钥解析数据,这样就安全了.但这样做有一个问题,就是这个秘钥怎么让对方知道.因为我们用的是对称加密.所以加密和解密用的都是同一个秘钥.现在有两种方案,第一种通过网络传输给对方,但是这样做,人家就又可以截获到你的网络请求,然后就知道你的秘钥了.第二种,你腿儿过去,奔走相告~,这老哥要是离你近点还可以接受,他要是在大洋彼岸这事可就费劲了.所以这个方案不行了.<br/>
+下一个方案,RSA非对称加密.这里需要展开一下</p>
+
+<h4 id="toc_5">RSA加密算法</h4>
+
+<p>这里面涉及到了很多数学和密码学的知识,其实很多我也一知半解的,我只能简单说一下.具体点的<a href="http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html">看这里</a>阮一峰的博客.我觉得说的还可以<br/>
+首先我们我们要知道一个概念叫质数~这个东西很神器,它有很多应用,其中一个就是密码学.<br/>
+质数定义为在大于1的自然数中，除了1和它本身以外不再有其他因数。<br/>
+互质关系:<br/>
+如果两个正整数，除了1以外，没有其他公因子，我们就称这两个数是互质关系.<br/>
+比如 7和9就是互质关系.<br/>
+加密算法就是利用的这一点,我们随便说两个质数,很容易,但是我给出乘积比如<del>3060</del>3111(之前这写错了,丢人了),让你找出它是哪两个质数的乘积,这事可就不简单了.实际它是51*61,那么大家可能想让计算机暴力破解会不会成为可能.人类已知破解的RSA秘钥的最大长度是768位,看起来很厉害,但实际上,我们的秘钥长度最少也是1024位的.<br/>
+<img src="media/15221395300202/15232704785589.jpg" alt="" style="width:465px;"/><br/>
+这是我在mac钥匙串上随便截的一个证书,他的秘钥长度是2048位,所以想破解这个秘钥,在咱们现有计算机的体系下,是不可能的.但是如果哪天量子计算机量产了,那迄今为止所有的加密方案都将作废.所以安全这种事是没有绝对的,所谓的绝对安全也只是在一个标准化的体系下.</p>
+
+<h4 id="toc_6">非对称加密</h4>
+
+<p>好了我们知道了RSA加密算法,我们在来看看非对称加密,所谓非对称加密就是加密的秘钥和解密的秘钥是两个完全不同的秘钥,成为公钥私钥,私钥加密的数据,用公钥才可以解开,用公钥加密的数据,用私钥才可以解开.这样咱们刚才的问题就解决了.我自己保存私钥,把公钥张贴出去,全世界谁都可以看到.你们想和我说悄悄话,那就把想说的话用公钥加密好,发过来,劫持的人没有私钥,他拿到的数据也没有任何意义.这样做看起来是完美了,但其实不是这样的.原因就是非对称方案的加密解密很慢的.这样的开销在追求更快更高更强的今天,显然是不行的.<br/>
+所以又有人想出的新的方案.</p>
+
+<h4 id="toc_7">非对称加密传输对称秘钥</h4>
+
+<p>也就是说A和B之间传输数据,A先用公钥把一个对称秘钥DC-Key加密,然后传给B,B拿到后用私钥解析出DC-Key,然后他们用这个DC-Key加密数据,这样只有第一次的时候慢以后的效率是很快的.<br/>
+<img src="media/15221395300202/15232718339085.jpg" alt="" style="width:797px;"/><br/>
+这样问题终于解决了吧~但实际并没有,因为实际操作时大部分情况,Client的公钥都是从Server请求来的,这就存在一种可能,就是第一次请求公钥的时候被中间人截获了.<br/>
+<img src="media/15221395300202/15232725491545.jpg" alt="" style="width:837px;"/><br/>
+这样,这个中间人可以做任何事情.这显然是又不安全了<br/>
+但是我们可以分析问题,问题主要出在了公钥的合法性上,谁能证明你的公钥就是我想访问那个server的公钥呢?<br/>
+大家可以想一下自己的毕业证书,通过这个,就可以鉴定你是不是XXX大学的毕业生.但是这需要一个权威机构,就是一个有公信力的,大家都相信的机构.如果你去某公司应聘,用人单位怀疑你的学历,他可以要求你提供毕业证书,他去有公信力的机构调查一下.判断你的学历.那我们也可以效仿.生成数字签名</p>
+
+<h4 id="toc_8">数字签名</h4>
+
+<p>首先要有一家有公信力的机构,也就是我们常说的CA机构.他自己一对公钥私钥.当有人来申请,说我想要安全的网络传输的证书.那么CA机构会给(就比如&quot;我的&quot;公司吧)生成一套公钥私钥,这个是属于我的公司.同时呢还要给我的公司一个证书,这个证书中我把它分成三部分组成,这样好理解一点:我的公司的公钥,和一些重要信息(其中有版本号,序列号,有效日期,使用者,颁发者标识,等等一堆东西),还有最重要的一个就是数字签名,这个数字签名是将我的公司的公钥和重要信息先用Hash算法生成一个摘要(用hash算法是为了保证只要数据被篡改了一点点,那么生成的摘要的变化就翻天覆地,防止中间人猜测出规则来),然后用CA机构的私钥!注意是CA机构的私钥对这个摘要进行加密,形成了数字签名.(Https的证书都是遵循X.509标准的,该标准规定了证书的数据结构)</p>
+
+<p><img src="media/15221395300202/15233315021299.jpg" alt="" style="width:505px;"/>这就是一个数字证书的结构.当从服务器拿到证书的时候,用同样的Hash算法解出摘要,然后用CA的公钥去解密,把得到的数据和证书里原来的信息就对比,就知道了是不是被篡改了.也就知道了这是我自己的服务器,而不是中间人的.因为中间人不知道CA的私钥,他也伪造不出来CA公钥能解析的证书.如果他想劫持到客户端用服务器的公钥加密的对称秘钥,但是他没有私钥,拿到加密后的数据,也没有意义.所以现在来看这种策略是安全的了.可能有童鞋会问.那CA的公钥又是咋来的?难道要再来一个证书?无限循环?事实上现在的操作系统和浏览器中已经内置了一些顶层的根证书,顶层的根证书!顶层的根证书!点击mac的钥匙串可以查看.也就是说只有这些机构颁发的证书才是可信的,有公信力的.(这些机构挣钱简直不要太简单...)事实上.我们的Https证书一般都是二级代理的.也就是说顶层的机构干活忙不过来了,就产生了二级机构,他们也可以颁发证书.所以有一种验证方式是证书链验证,上面iOS的API中就做了证书链验证,它会把整条链都验证一遍,才算是安全,至于如何找到上一级的证书,X.509的证书标准的数据结构中固定的数据,表明证书的颁发机构等信息,足矣找到上级证书.</p>
+
+<h5 id="toc_9">关于token(更好的理解数字签名)</h5>
+
+<p>简单说一下token,token其实也是一种数字签名,这也就是为什么token能认证用户的原因,大家可以看一下自己服务器返回的token,其实它是一个三段式,XXX.XXXXXX.XXXXXXXXX,第一段,是一段json,然后用base64加密,json中说明了token的加密方式和一些信息,第二段也是一段json,也是用base64加密,这一段的json中是用户的唯一标示信息和一些非关键数据.第三段是用第一段中表明的加密算法(一般是SHA256)和秘钥把把第一段和第二段的数据加密,形成这样的三段式.这样做后,服务器拿到token,把第三段的数据解密,和前两段对比,如果一致,说明数据没有被篡改.如果劫持者修改了任何一段数据都会导致解密失败,或对比不一致,验证也就失败了.所以大家可以发现,数字签名的原理都是一样的,只不过用在不用的地方,标准不同而已.它最主要的作用就是防篡改.</p>
+
+<p>原归正传<br/>
+这样整个过程就安全了.(实际请求的时候对称秘钥是握手阶段中三个随机数共同决定的,至于为什么三个随机数共同决定的)</p>
+
+<blockquote>
+<p>&quot;不管是客户端还是服务器，都需要随机数，这样生成的密钥才不会每次都一样。由于SSL协议中证书是静态的，因此十分有必要引入一种随机因素来保证协商出来的密钥的随机性。<br/>
+对于RSA密钥交换算法来说，pre-master-key本身就是一个随机数，再加上hello消息中的随机，三个随机数通过一个密钥导出器最终导出一个对称密钥。<br/>
+pre master的存在在于SSL协议不信任每个主机都能产生完全随机的随机数，如果随机数不随机，那么pre master secret就有可能被猜出来，那么仅适用pre master secret作为密钥就不合适了，因此必须引入新的随机因素，那么客户端和服务器加上pre master secret三个随机数一同生成的密钥就不容易被猜出了，一个伪随机可能完全不随机，可是是三个伪随机就十分接近随机了，每增加一个自由度，随机性增加的可不是一。&quot;</p>
+</blockquote>
+
+<p>那如果是双向认证,Client的端也需要配置一个证书.但一般情况下我们不需要做双向认证.<br/>
+<img src="media/15221395300202/15233326775966.jpg" alt="" style="width:768px;"/><br/>
+这样这个HTTPS的原理,我们就梳理清楚了.<br/>
+下面是我参考的一些资料</p>
+
+<p><a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services"></a><a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services">https://developer.apple.com/documentation/security/certificate_key_and_trust_services</a><br/>
+<a href="http://swiftcafe.io/2016/04/16/swift-https"></a><a href="http://swiftcafe.io/2016/04/16/swift-https">http://swiftcafe.io/2016/04/16/swift-https</a><br/>
+<a href="https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA"></a><a href="https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA">https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA</a><br/>
+<a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html"></a><a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html">http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html</a><br/>
+<a href="https://blog.csdn.net/it_man/article/details/24698093"></a><a href="https://blog.csdn.net/it_man/article/details/24698093">https://blog.csdn.net/it_man/article/details/24698093</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[灵活扩展的下拉刷新控件的封装]]></title>
+    <link href="https://rookieneo.github.io/15113233292599.html"/>
+    <updated>2017-11-22T12:02:09+08:00</updated>
+    <id>https://rookieneo.github.io/15113233292599.html</id>
+    <content type="html"><![CDATA[
+<p><img src="media/15113233292599/refresh_arrow@2x%2014-38-10-573.png" alt="refresh_arrow@2x 14-38-10-573"/><br/>
+<font color=#586E75 size=3 ><br/>
+最近开始做新项目,需要在Swift项目中使用下拉刷新控件,之前的项目有用过一起其他的三方库,比如MJRefresh,CRRefresh,但是MJ是OC的,总是感觉一个纯Swift项目用OC的不太爽,CR的库没有升级到Swift4,由于是新项目,直接上的Swift4,也不能用,所以就打算自己封装一个.</p>
+
+<p>其实下拉刷新这种常用的控件Github上有很多都封装的不错,但是在我看来,他们都太重了,大部分功能都是我不需要的,至少现在不需要,所以我打算封装一个简单灵活的(适应现在的需求就可以),易扩展的(未来有新的需求也可以很好的实现).</p>
+
+<p>这篇文章我会先从实现功能的角度实现一个耦合性很强的刷新控件,然后一步步的优化,去依赖,最后形成一个使用起来很方便的下拉刷新控件,最后提出当初我设计的时候的一些疑问,和一些优缺点作为自己以后的思考或和大家一起沟通.</p>
+
+<h4 id="toc_0">一个简单的下拉刷新View</h4>
+
+<p>这是一个UI控件,所以首先我就创建了一个View.并把它添加到一个SrollView上.</p>
+
+<pre><code class="language-Swift">extension UIScrollView {
+    var neoRefreshHeader: RefreshView{
+        get{
+            let view = Bundle.main.loadNibNamed(&quot;RefreshView&quot;, owner: self, options: nil)?.last as! RefreshView
+            self.addSubview(view)
+            view.snp.makeConstraints { (make) in
+                make.left.right.equalTo(self)
+                make.bottom.equalTo(self.snp.top)
+                make.height.equalTo(60)
+            }
+            return view
+        }
+    }
+}
+</code></pre>
+
+<p>这时候当你的scrollView调用<code>neoRefreshHeader</code>的时候,view就添加到ScrollView上,下拉的时候就能看到了.但现在这个View是一个纯展示的静态的,我们的需求就是要在用户不同的操作下,我们有响应,并且能向业务层回调(进行网络请求等耗时操作).这时候我们就需要做一个总结,总结仅对这个功能来说,用户会有哪些操作,然后对这些操作,做一个抽象,把他的操作,抽象为数据的表现形态.</p>
+
+<blockquote>
+<p>这里我想稍微展开一下,就是抽象的这一个过程,自从上学开始,我们就一直没有离开过这个词,只不过小学的老师从来不会和你说这个词,因为说了你也不懂,但是抽象经常会和一个词一起说,那就是建模.维基百科给的解释有点模糊,我更偏向百度百科的解释:建模就是建立模型，就是为了理解事物而对事物做出的一种抽象，是对事物的一种无歧义的书面描述.数学都是从实际的特殊的问题出发,将它抽象,一般化,再去解决实际的问题.</p>
+
+<p>这个世界很多道理都是相通的,社会哲学和自然科学一直也是相辅相成的.说了这么多,就是想表达,很多东西,思想都是一样的.我们今天要做的这一个简单的下拉刷新的封装也是一样,从一个特殊的下拉刷新出发,抽象成一个一般化的控件,并用它来解决各类不同需求的刷新问题.以后我们封装别的控件,做别的框架也可以用这样的思想.当然这只是个人理解.当我瞎扯淡就好~~</p>
+</blockquote>
+
+<p>回到之前说的,把用户的操作,抽象成一个数据模型,要想下拉刷新,用户要下拉ScrollView,到一定程度,然后松手,数据刷新.那么其实我们可以把它抽象成三种状态对应一个枚举类型</p>
+
+<pre><code class="language-Swift">enum RefreshStatus : String{
+    case pullToRefresh    = &quot;下拉刷新&quot;
+    case loading          = &quot;正在加载&quot;
+    case releaseToRefresh = &quot;松开刷新&quot;
+}
+</code></pre>
+
+<p>用户开始拖拽的时候是下拉刷新状态,到一定程度,用户还去拖拽,就变成松开刷新的状态,然后用户松手了,就是正在加载状态,最后加载完毕,回到下拉刷新状态,这样一个闭环.确定了这几个状态,我们需要和用户拖拽距离这个数据做配合来改变状态,然后在根据状态的改变来做出UI不同的展示,响应给用户.这就需要做监听</p>
+
+<pre><code class="language-Swift">    override func willMove(toSuperview newSuperview: UIView?) {
+        guard let view = newSuperview as? UIScrollView else{
+            return
+        }
+        scrollView = view
+        scrollView?.addObserver(self, forKeyPath: &quot;contentOffset&quot;, options: NSKeyValueObservingOptions.new, context: nil)
+        
+    }
+</code></pre>
+
+<p>当我这个View被添加到ScrollView的时候做监听<code>contentOffset</code>属性</p>
+
+<pre><code class="language-swift">override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if let path = keyPath,path == &quot;contentOffset&quot;{
+        let contontMaxY = -(pullHeight + (scrollView.contentInset.top))
+        let y = scrollView.contentOffset.y
+        refreshView?.refreshContentOffset(scrollView.contentOffset)
+        //拖拽
+        if scrollView.isDragging{
+            if y &gt; contontMaxY{
+                type = .pullToRefresh
+            }else{
+                type = .releaseToRefresh
+            }
+        }else{
+        //松手
+            if type == .releaseToRefresh{
+                self.beginHeaderRefreshing()
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>根据用户下拉的距离的变化,和手是否在屏幕上在相关的逻辑判断来改变状态.最后就是根据状态来改变UI了,我把它写到了枚举的didset里,来统一管理.</p>
+
+<pre><code class="language-Swift">    var type = RefreshStatus.pullToRefresh{
+        didSet{
+            titleLabel.text = type.rawValue
+        }
+    }
+</code></pre>
+
+<p>跑起来的效果是<img src="media/15113233292599/normal.gif" alt="norma"/></p>
+
+<p>作为一个第一版的Demo,它是可以接受的.当然我们还需要增加许多方法,比如<code>func beginHeaderRefreshing()</code> <code>func endHeaderRefreshing()</code></p>
+
+<h4 id="toc_1">单一职责,功能拆分,易扩展,去依赖</h4>
+
+<p>首先第一点单一职责.这个RefreshView它现在做了好多事,监听用户的滑动手势是它在做,UI的动态更新给用户反馈也是它在做,它一个View做了两件事,这显然没有做到单一职责.我们需要把这个监听放到manager里,让manager去管理view,用户的操作会改变manager里的枚举状态,manager的每当状态改变的时候都会通知view,嘿~哥们,你该变成xxx状态的样子了.然后view改变.这样,我们做到了单一职责,功能也拆分的很明确.<br/>
+这时候我们在ScrollView中,添加的get方法就不能返回View了,而是Manager,Manager中实现<code>RefreshControl</code>这个协议</p>
+
+<pre><code class="language-Swift">protocol RefreshControl{
+    func beginHeaderRefreshing()
+    func endHeaderRefreshing()
+    func addPullRefresh(_ refreshView : RefreshStatusChangeProtocol &amp; UIView,_ action: @escaping (() -&gt;Void))
+}
+</code></pre>
+
+<p>在<code>addPullRefresh</code>的时候创建Manager</p>
+
+<pre><code class="language-Swift">func addPullRefresh(_ refreshView: UIView &amp; RefreshStatusChangeProtocol = RefreshViewConfig.share.defaultView, _ action: @escaping (() -&gt; Void)) {
+        for subView in scroll.subviews{
+            if let refreshView = subView as? (UIView &amp; RefreshStatusChangeProtocol){
+                refreshView.removeFromSuperview()
+            }
+        }
+        let refreshViewManager = RefreshViewManager(scrollView: scroll)
+        refreshViewMaker.addPullRefresh(refreshView, action)    
+    }
+</code></pre>
+
+<p>为了防止重复添加,每次添加的时候都遍历一遍ScrollView,将重复的删掉[1].然后创建Manager,并将负责展示的View传到manager中去,</p>
+
+<pre><code class="language-Swift">func addPullRefresh( _ refreshView: (UIView &amp; RefreshStatusChangeProtocol), _ action: @escaping (() -&gt;Void)){
+        self.action = action
+        self.refreshView = refreshView
+        self.scrollView.addSubview(refreshView)
+        self.snp.make{make in
+            xxxxxxxx
+        }
+    }
+</code></pre>
+
+<p>在Manager中 将view添加在ScrollView上.</p>
+
+<pre><code class="language-Swift">init(scrollView : UIScrollView) {
+    super.init(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+    self.scrollView = scrollView
+    self.scrollView.addObserver(self, forKeyPath: &quot;contentOffset&quot;, options: NSKeyValueObservingOptions.new, context: nil)
+}
+</code></pre>
+
+<p>并在manger的init方法里,对scrollView.contentOffset做监听.</p>
+
+<pre><code class="language-Swift">extension UIScrollView{
+    var pd : RefreshControl
+    {
+        return RefreshViewManager(scroll: self)
+    }
+}
+</code></pre>
+
+<p>这时ScrollView的扩展应该改为这个样子了,每次调用pd,都会返回RefreshControl这些协议类型,业务层也可以调用到声明的三个方法.这样做的目的是为什么?为什么不直接返回直接返回Manager?这样可以大大减少业务端使用的难度,也是为了更加的安全,返回给外层的,就仅仅是一个协议类型,没有任何多余的function.<br/>
+Manager的工作完成了我们在来看看RefreshView</p>
+
+<pre><code class="language-Swift">///只可以UIView来实现
+protocol RefreshStatusChangeProtocol where Self : UIView {
+    func refreshStatusChange(type : RefreshStatus)
+    func refreshContentOffset(_ contentOffset: CGPoint)
+     var refreshViewManager: RefreshControl? {
+        get
+        set
+    }
+}
+</code></pre>
+
+<p>RefreshView要做的事很简单,就是实现这个协议,下拉Status发生改变的时候manger会调用<code>refreshStatusChange(type : RefreshStatus)</code>,要是有特殊的需要,就实现<code>refreshContentOffset(_ contentOffset: CGPoint)</code>,至于那个get set的属性,我们暂时先不说.<br/>
+这样,我们对这个控件做了一次优化,让我们跑起来看一下效果.但是结果是悲哀的,那就是崩溃了.这个问题,困惑了我很久,报的错误是监听的对象已经不在了.后来我发现,Manager被释放了,所以监听的位置崩溃了.</p>
+
+<p>在ScrollView的扩展当中,每次都会返回一个新的Manager,也就是说每次业务层在调用<code>scrollView.pd.addPullRefresh(_ refreshView : RefreshStatusChangeProtocol &amp; UIView,_ action: @escaping (() -&gt;Void))</code>之后,manager就已经被释放了,而manger中却在监听ScrollView的滑动,所以crash了.但是下拉刷新的View却不会释放,因为它添加到ScrollView上,被ScrollView持有了.这就非常尴尬了,我们把功能拆分了,但是manager又是一个很尴尬的存在,因为谁都不想要它.扩展中只能添加计算属性,不能添加存储属性,所以每次get方法调用完之后,都会被释放.这里我有两种方法,一个是把manager也变成一个View 添加到ScrollView当中,成为下拉刷新View的父View.第二种,把让RefreshView持有manager.这样refreshView不释放,那manager也不会释放.他们的生命周期是一样的.最后我选了第二种.这就是<code>RefreshStatusChangeProtocol</code>增了的那个属性的原因.用它来持有manager,这样就不会释放了.(这个权衡要放在后面讨论)<br/>
+还有最后一步,那就是去依赖,一个好的第三方库,肯定是依赖越少越好,我们在这里用了Snapkit,我们换成系统的autolayout</p>
+
+<pre><code class="language-Swift">refreshView.translatesAutoresizingMaskIntoConstraints = false
+self.scrollView.addSubview(refreshView)
+self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.left, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.left, multiplier: 1, constant: 0))
+self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.right, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.right, multiplier: 1, constant: 0))
+self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.bottom, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.top, multiplier: 1, constant: 0))
+refreshView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.height, multiplier: 1, constant: pullHeight))
+</code></pre>
+
+<p>这样一来,这次优化算是完成了.核心功能完成后,那就是锦上添花了,就是定义几个不同样式的RefreshView,给大家提供使用.但这个时候,又一个问题就被抛出来了,你定义了那么多RefreshView,每个都有不用的下拉刷新效果,那你准备怎么让业务端使用这些View呢.</p>
+
+<pre><code class="language-Swift">scrollView.pd.addPullRefresh(RefreshView()) {
+    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2, execute: {
+        self.scrollView.pd.endHeaderRefreshing()
+    })
+}
+</code></pre>
+
+<p>在没有优化之前,我们是这样调用的.我们必须传一个View和一个action,这个action属性很有必要,因为每个ScrollView刷下要执行的业务都是不一样的,但是这个View就不是很有必要了,一个App大部分的刷新样式都是一样的,我们每次添加下拉刷新都需要传一个View,这显然很麻烦,所以我决定加一个默认值,这样当使用默认的View的时候就可以不用传了,由于协议类型不可以有默认是方法,所以我就又做了一个Struct,来实现默认值.然后,又做了一个config.swift,可以配置默认的View和下拉的高度.这里就不在细说.可以clone下代码看下.嘻嘻<br/>
+下面我们开始定义不同样式的刷新.</p>
+
+<pre><code class="language-Swift">class RefreshViewConfig {
+    static let share = RefreshViewConfig()
+    var defaultView: (UIView&amp;RefreshStatusChangeProtocol) {
+        get{
+            return CustomAnimateRefreshView()
+        }
+    }
+    var defaultPullHeight: CGFloat = 60
+}
+</code></pre>
+
+<h4 id="toc_2">带有不同动画的RefreshView</h4>
+
+<ul>
+<li> 普通的下拉刷新(类似新浪微博)</li>
+</ul>
+
+<p><img src="media/15113233292599/sina.gif" alt="sina"/></p>
+
+<p>经过我们对功能的拆分,它的代码简单至极,实现这样的效果,仅仅需要40行代码.</p>
+
+<pre><code class="language-Swift">class NormalRefreshView: UIView,RefreshStatusChangeProtocol {
+    var refreViewMake: RefreshControl?
+    @IBOutlet weak var refreshImage: UIImageView!
+    @IBOutlet weak var activityIndicatorView: UIActivityIndicatorView!
+    @IBOutlet private weak var titleLabel: UILabel!
+    func refreshStatusChange(type: RefreshStatus) {
+        switch type {
+        case .loading:
+            titleLabel.text = &quot;正在加载&quot;
+            refreshImage.isHidden = true
+            activityIndicatorView.startAnimating()
+        case .pullToRefresh:
+            refreshImage.isHidden = false
+            titleLabel.text = &quot;下拉刷新&quot;
+            activityIndicatorView.stopAnimating()
+                self.refreshImage.transform = self.refreshImage.transform.rotated(by: CGFloat.pi)
+        case .releaseToRefresh:
+            refreshImage.isHidden = false
+            titleLabel.text = &quot;松开刷新&quot;
+            activityIndicatorView.stopAnimating()
+            UIView.animate(withDuration: 0.2, animations: {
+                self.refreshImage.transform = self.refreshImage.transform.rotated(by: CGFloat.pi)
+            })
+        }
+    }
+    class func getXibView() -&gt; NormalRefreshView{
+        let view = Bundle.main.loadNibNamed(&quot;NormalRefreshView&quot;, owner: self, options: nil)?.last as! NormalRefreshView
+        return view
+    }
+    func refreshContentOffset(_ contentOffset: CGPoint) {
+    }
+}
+</code></pre>
+
+<ul>
+<li> 简单动效的刷新</li>
+</ul>
+
+<p><img src="media/15113233292599/cycle.gif" alt="cycle"/><br/>
+它的代码不需要很多,100多行足矣,使用<code>UIBezierPath</code>,<code>CAShapeLayer</code>,<code>CAKeyframeAnimation</code>,<code>CAAnimationGroup</code>配合起来使用,就可以了~但我对效果还是有点不太满意,还需要优化.</p>
+
+<h4 id="toc_3">总结</h4>
+
+<p>到这里,一个下拉刷新的控件就封装完了,下面我要提出一些疑问.</p>
+
+<p>最大的疑问就是在功能拆分的时候manger被释放的问题,我当时提出的两种方案,一种View嵌套的模式,由父view监听用户的动作,子view展示.第二种是将由view引用manger.当时我选择了第二种,我也很难说服自己用哪个好,因为我觉得用哪个都不好.所以这个疑问就放到了最后.</p>
+
+<p>说一下继承,当这篇博客要写完的时候,我在发现了我当初那个问题的答案,至少我心里是满意的答案,就是继承,可能现在提出继承大家会不屑一顾,在这个面向协议,面向切面横行的年代,提出继承未免有点过时了.也正因为我的这个思想导致我一开始设计的时候就总想着面向协议,现在回头想一想,那个manger没有引用,被释放了,其实也说明它是个累赘,或者说它是多余的,但是我们的功能还必须要拆分,这时候我就应该想到继承了,basicView里的私有方法监听,并调用public的方法,public function 负责的实现由继承basicView的View自己来override,子View只在乎动画的效果.</p>
+
+<p>继承确实会有很多问题,比如经典的菱形问题,也有很多诟病,但是任何一种思想,一种设计模式,存在就一定是有意义,它们都各有优缺点,这世界本就没有完美的事物,我们在使用的时候需要权衡利弊选择最合适的.<br/>
+最后~<a href="https://github.com/RookieNeo/NeoRefresh.git">Github地址</a><br/>
+</font></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[对Swift写时复制技术的理解]]></title>
+    <link href="https://rookieneo.github.io/15034498083541.html"/>
+    <updated>2017-08-23T08:56:48+08:00</updated>
+    <id>https://rookieneo.github.io/15034498083541.html</id>
+    <content type="html"><![CDATA[
+<p><font color=#5F9EA0 size=3 ></p>
+
+<blockquote>
+<p>最近又重新在研究数据结构(<del>当然大学时候学的也不咋地</del>😜)打算把一些经典的数据结构用Swift语言重新实现一遍.虽然在实际开发中,很多高级的数据结构,算法都不需要你来写,我相信每一种语言,都有足够多的框架提供近乎完美的API供你日常开发,这会造成一种幻觉,就是你会觉的这些基础的东西不重要,我理不理解它并不会对我有太大影响,我会调用几个API就足矣.但作为一个coder(其实很多行业也是一样),对基础知识理解的深度,在很大程度上决定了在这条路上你的上限在哪里.<br/>
+</font></p>
+</blockquote>
+
+<h4 id="toc_0">背景</h4>
+
+<p>其实很早之前我就想仔细的深入的用Swift研究一次数据结构了,但由于一直没有找到好的书籍,这个计划就被挂起了🤕.最近看喵神翻译的新书&lt;&lt;集合类型优化&gt;&gt;出版了<a href="https://objccn.io/products/optimizing-collections/preview/">传送门</a>,借此机会,正好潜心研究一下.<br/>
+书中的第一节就提到了写时复制技术,这个词相信使用Swift的开发者都是既熟悉又陌生的.我也听过好多次,在Swift进阶中,我就看到过(<del>写博客的好处之一就是你想把东西讲明白要比你自己看明白深刻好几倍</del>),所以就先研究一下写时复制技术.</p>
+
+<h4 id="toc_1">值类型和引用类型的区别,什么是值语义</h4>
+
+<p>值类型和引用类型的区别这点顺带说一下就行,引用类型的具体表现就是我们最常用的类,通过引用计数来管理,通常我们赋值等操作,只会复制一个指针,指向它所在的内存地址,多一个引用,引用计数就+1,增加了效率,但是不安全(我在<code>Whats new in Swift4</code>这篇博客中的Encoding and decoding中有提到).值类型我们也经常用,Int类型,char,struct都是值类型,将一个值类型变量赋给另一个值类型变量时，将复制包含的值,具有新的内存地址,但这样做是代价是昂贵的(Swift做了优化,后面会解释).<br/>
+那什么又是<code>值语义</code>,假设这样的场景,你有一个Class,里面所有的属性(也是引用类型的)都是私有的private,你不想让外部直接用,外部如果需要使用,可以调用暴露的get方法,你把私有属性返回给他,但其实这个时候,这个属性已经不在是私有的了,因为引用类型的特点,外部已经拿到了私有属性的指针,可以对他进行任务操作,很不安全.<br/>
+<img src="media/15034498083541/15034528025928.jpg" alt="" style="width:864px;"/><br/>
+图中对象b的str改变了,a中的subA对应的属性也跟着改变了.这显然不是你想要效果.需要改造一下,方法也很简单<br/>
+<img src="media/15034498083541/15034533452055.jpg" alt=""/><br/>
+如果是继承NSObject的类,可以直接用copy来复制.不管怎么说 效果是实现了,它是一个引用类型,但是表现的确实值类型的效果,它就具有了<code>值语义</code>.但很明显这样做的代价是昂贵的,每个get都需要重新创建一个,或复制(深copy)一个,这种消耗是我们不希望存在的.这就需要用到写实复制技术</p>
+
+<h4 id="toc_2">什么是写时复制</h4>
+
+<p><font color=#5F9EA0 size=3 ></p>
+
+<blockquote>
+<p>打个比方,你在公司上班,老板说每天给你80块钱,你心里算了算,说行,那一小时就是10块钱,一分钟也就是0.16666667块钱,那老板你每分钟都给我这些钱吧.老板说你小子有病吧,你想累死财务吗(这就是一个无用的消耗)?这钱又飞不了,等你要用的时候(比如你每天下班要吃饭了)我在给你不就完了么,也不耽误你呀.你一想有道理,要不然我还得每天上班带个麻袋装钱,那好吧.这样一种约定就出现了.就是有用的时候在给你,平常只是记录一下<br/>
+</font><br/>
+简单来说这就是写实复制技术,只有需要改变得时候,才会对变量进行复制,如果不改变,大家都公用一个内存.在 Swift 标准库中，像是 <code>Array</code>，<code>Dictionary</code> 和 <code>Set</code> 这样的集合类型是通过写时复制 (copy-on-write) 的技术实现的(摘录来自: Chris Eidhof. “Swift 进阶”) .所以我们用数组<code>Array</code>举个🌰:<br/>
+<img src="media/15034498083541/15034549092312.jpg" alt=""/><br/>
+可以看到,尽管数组是值类型,但是在赋值操作之后,内存还是相同的,并没有真正的进行复制.我们改变一下y,在看看:<br/>
+<img src="media/15034498083541/15034552504215.jpg" alt=""/><br/>
+当y发生改变的时候,y拥有了新的内存地址,它发生了赋值.这就是写时复制技术,昂贵的复制操作只会发生下变量发生改变的时候.这样做后,我们可以保证,我们的数据既是安全的也是高效的.</p>
+
+<h4 id="toc_3">我们需要做什么</h4>
+
+<p>当你的结构体内部都是值类型的时候,写时复制是免费的,但是大部分情况,你的结构体中有一个或多个引用类型,这个时候,写时复制需要你自己来实现了.<br/>
+参考Swift进阶中,我们就用<code>NSMutableData</code>举例.<br/>
+<img src="media/15034498083541/15034560622792.jpg" alt="" style="width:522px;"/><br/>
+在MyData结构体中,data是私有的,我们通过dataForWriting这个计算属性来管理data,每当get操作的时候都会发生复制.并返回data.(在结构体中改变本身需要增加关键字mutating,有个这个关键字只有使用使用var声明的才可以调用).再扩展一个append方法,在调用的时候,dataForWriting会出发get方法,复制一份data,并对成员变量赋值,在对data进行更改.</p>
+</blockquote>
+
+<pre><code class="language-Swift">let theData = NSData(base64Encoded: &quot;rookieneo&quot;, options: [])!
+var x = MyData(theData)
+let y = x
+//x.data === y.data true
+x.append(x)
+//x.data === y.data false
+</code></pre>
+
+<p>这样一个基本的写时复制就实现了,在赋值操作的时候,不会发生复制,但是当对变量进行更改的时候,会发生复制.但是这样做,仍然是昂贵的.因为它会在一些不需要复制的时候发生复制,比如:</p>
+
+<pre><code class="language-Swift">let theData = NSData(base64Encoded: &quot;rookieneo&quot;, options: [])!
+var x = MyData(theData)
+for _ in 0..&lt;5{
+    x.append(x)    
+}
+</code></pre>
+
+<p>很明显,x并没有共享内存,但是复制却一直在发生.这也是我们不希望的.</p>
+
+<h6 id="toc_4">高效方式</h6>
+
+<p>想要不发生上文的无效复制,我们需要知道一件事,就是data属性 是不是唯一引用,在Swift中,<code>isKnownUniquelyReferenced</code>函数(是函数不是方法~)可以来检测是否是唯一引用.但是OC的类这个函数是失效的.所以我们需要对OC的类做一层封装,并对结构体加以改造.<br/>
+<img src="media/15034498083541/15034575601593.jpg" alt="" style="width:615px;"/><br/>
+这样改造完成后,我们发现,在get方法中,判断一下引用就可以了,只有不唯一的时候才进行复制,这样是极好的😜.只不过那个Swift的泛型封装有点丑陋,不过在swift没有完全摆脱oc的情况下,在所难免.</p>
+
+<pre><code class="language-Swift">var  empty = MyData(NSData())
+var emptyCopy = empty
+for _ in 0..&lt;5{
+    empty.append(theData)
+}
+</code></pre>
+
+<p>现在再试一下刚才的循环,发现empty只复制了一次,也就是第一次,这样满足了我们的要求,在引用为1的时候不发生复制.到此写时复制的问题就已经解决了.不过在使用时它还有很多陷阱.</p>
+
+<h4 id="toc_5">写时复制的陷阱</h4>
+
+<p>让我们对比来看(伪代码).</p>
+
+<pre><code class="language-Swift">var array = [MyData()]
+array[0].append()//No copy
+</code></pre>
+
+<pre><code class="language-Swift">var dic = [&quot;rookie&quot;: MyData()]
+dic[&quot;rookie&quot;]?.append()//copy
+</code></pre>
+
+<p>这看起来很奇怪,都是标准库中的类型,但是表现出来的状态是不同的,在数组下用下标取值不会有多个引用,而字典就会有,看起来数组的表现是正确的,而字典是错误的,那在字典中,我们需要怎么做,让我们来看一下书中的解释.</p>
+
+<blockquote>
+<p>如果在你将一个写时复制的结构体放到字典中，又想要避免这种复制的话，你可以将值用类封装起来，这将为值赋予引用语义。</p>
+
+<p>当你在使用自己的结构体时，也需要将这一点牢记于心。比如，我们可以创建一个储存某个值的简单地容器类型，通过直接访问存储的属性，或者间接地使用下标，都可以访问到这个值。当我们直接访问它的时候，我们可以获取写时复制的优化，但是当我们用下标间接访问的时候，复制会发生：</p>
+</blockquote>
+
+<pre><code class="language-Swift">struct ContainerStruct&lt;A&gt; {
+var storage: A
+subscript(s: String) -&gt; A {
+get { return storage }
+set { storage = newValue }
+}
+}
+var d = ContainerStruct(storage: COWStruct())
+d.storage.change() // No copy
+d[&quot;test&quot;].change() // Copy”
+摘录来自: Chris Eidhof. “Swift 进阶”。 iBooks. 
+</code></pre>
+
+<p>居然还需要再用引用类型封装起来,这会让使用者疯掉的,这也是Swift未来的改进方向之一,Swift团队希望字典也表现出和Array一样的效果.之所以数组中是对的,是因为Array是通过地址器(addressors)的方式实现的下标的,地址器会直接访问内存,而不是复制.当然你也可以再自己的代码里实现地址器<a href="https://github.com/apple/swift/blob/73841a643c087e854a2f62c7e073317bd43af310/docs/proposals/Accessors.rst">-传送门-</a></p>
+
+<h2 id="toc_6">总结</h2>
+
+<p><font color=#5F9EA0 size=4 ></p>
+
+<blockquote>
+<p>在单向数据流方案非常流行的今天,结构体在Swift中的特性,对单项数据流有着很好的支持,包括reSwift等一些框架都已经有了一席之地,相对于双向数据流,它是安全,可控的,代码也是相对清晰的,所以写时复制的技术也就显得尤为重要,弥补了值类型性能的不足.以后在日常的开发中可以小规模的试用.😜<br/>
+</font></p>
+</blockquote>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[从切圆角引发的对iOS动画框架的探究]]></title>
+    <link href="https://rookieneo.github.io/15026719129123.html"/>
+    <updated>2017-08-14T08:51:52+08:00</updated>
+    <id>https://rookieneo.github.io/15026719129123.html</id>
+    <content type="html"><![CDATA[
+<p><font color=#5F9EA0 size=4 ></p>
+
+<blockquote>
+<p>上周在开发的过程中,遇到了一个问题,就是如何只切割图片的单独一个圆角,而不是四个圆角,场景是用户在点火锅底料的时候,四宫格锅底是由四个锅拼成的,每个锅的图片都是不一样的,要拼接成一个完成的锅底,具体情况看图片,锅底的四张图片每一张都只有一个圆角.<br/>
+</font></p>
+</blockquote>
+
+<p><img src="media/15026719129123/15026752741187.jpg" alt="" style="width:320px;"/></p>
+
+<h3 id="toc_0">方案一</h3>
+
+<p>其实这有一个非常简单的方法,就是把这四个<code>UIImageView</code>放到一个大的View中,把这个View切一个圆角,就ok了,一开始我就这这么做的,但是随后另一个问题摆在了我的面前.<br/>
+<img src="media/15026719129123/15026921116631.jpg" alt="" style="width:306px;"/><br/>
+就是用户在添加锅底的时候,当前为空的锅底需要显示为红色的线(像上文的图片那样),这次我再也不能投机取巧了.所以我觉得好好研究一下,第一步先从切圆角开始.</p>
+
+<pre><code>extension UIView {
+    func addRoundedCorners(withRect rect: CGRect,rectCorner: UIRectCorner,cornerRadii: CGSize){
+        let maskPath = UIBezierPath(roundedRect: rect, byRoundingCorners: rectCorner, cornerRadii: cornerRadii)
+        let maskLayer = CAShapeLayer()
+        maskLayer.frame = rect
+        maskLayer.path = maskPath.cgPath
+        self.layer.mask = maskLayer
+    }
+}
+</code></pre>
+
+<p>非常好,调用这个方法后效果真的和第一张图一模一样,都只有一个圆角,下面开始下一步,就是在没有锅底的view中加入红线,我的想法是加上Border就可以了,so 我设置了一下border,结果是这个样子的<br/>
+<img src="media/15026719129123/15026980717569.jpg" alt="" style="width:318px;"/><br/><br/>
+看似挺对的,但其实是有问题的,那就是每个圆角的位置 Border都没有作用,都消失了,这是因为什么我要解释一下.<br/>
+<font color=#5F9EA0 size=4 ></p>
+
+<blockquote>
+<p>首先要说一下mask这个CALayer的属性,查看API,会发现CALayer中的mask属性,也是CALayer类型的,官方的解释翻译过来意思就是layer中的可视区域,在看一下我上面的代码,创建了只有一个圆角的贝塞尔曲线,设置为layer的path,然后赋值给view的mask属性.然后在设置的是view的border,说到这,原因也就出来了,我画图解释一下.<br/>
+</font></p>
+</blockquote>
+
+<p><img src="media/15026719129123/15026996232116.jpg" alt="" style="width:351px;"/><br/>
+绿色部分是layer.border,而里面的圆角是mask的layer,刚才说过了,可视区域是mask里面的部分,所以圆角的那部分border看不到了.(<del>到现在我终于知道了 <code>view.layer.masksToBounds = true</code>这个属性是干嘛了</del>后来一看,好像说的不对)有同学可能会想,那把mask的border改宽不就行了吗?但经过我的测试是无效的,我认为是苹果做了特殊的设置,一个控制显示区域的layer如果还可以设置<code>borderWidth</code>和<code>borderColor</code>的话就不对了.<br/>
+所以就得自己画一个layer加上去了.</p>
+
+<pre><code>func addRoundCorneerBezierPath(rect: CGRect,roundCorneer: UIRectCorner,radii: CGSize){
+        let layer = CAShapeLayer()
+        layer.lineWidth = 1
+        layer.strokeColor = UIColor.red.cgColor
+        layer.fillColor = UIColor.clear.cgColor
+        let path = UIBezierPath(roundedRect: CGRect(x: 1, y: 1, width: rect.width-2, height: rect.height-2), byRoundingCorners: roundCorneer, cornerRadii: radii)
+        layer.path = path.cgPath
+        self.layer.addSublayer(layer)
+    }
+</code></pre>
+
+<p>CAShaperLayer是CALayer的子类.CAShapeLayer是一个图层,图层上你可以画各种东西,它的path属性就是它的路线,路线可以有很多方式来画,只不过我们选择用UIBezierPath来画而已,当然BezierPath值得研究的地方还有很多,这地就不一一细说了.CAShapeLayer也可以和CALayer一样设置frame或背景颜色,只不过一般我们用它来绘制图形.<br/>
+既然已经说了这么多CA家族的东西,那就继续说一下CABasicAnimation动画和CAGradientLayer梯度图层.</p>
+
+<h3 id="toc_1">转转转</h3>
+
+<p><img src="media/15026719129123/haha.gif" alt="haha" style="width:150px;"/><br/>
+下面做一个Demo,就是这种转转转,颜色渐变的效果.这种常见的效果在很多场景都有使用,比如蒙板,温度计,各种仪表都有使用.<br/>
+首先创建一个圆环的CAShapeLayer</p>
+
+<pre><code> let view = UIView(frame: CGRect(x: 20, y: 20, width: 200, height: 200))
+        view.backgroundColor = UIColor.gray
+        self.view.addSubview(view)
+        let layer = CAShapeLayer()
+        layer.lineWidth = 10 //线宽 
+        layer.strokeStart = 0//起始点
+        layer.strokeEnd = 0//结束点
+        layer.strokeColor = UIColor.white.cgColor
+        layer.fillColor = UIColor.clear.cgColor
+        let path1 = UIBezierPath(arcCenter: CGPoint(x: 100, y: 100), radius: 45, startAngle: 1.5*CGFloat.pi, endAngle: 3.46*CGFloat.pi, clockwise: true)
+        layer.path = path1.cgPath
+        layer.lineCap = &quot;round&quot; //线头样式
+        view.layer.addSublayer(layer)
+</code></pre>
+
+<p>然后,创建一个颜色渐变的CAGradientLayer的可视区域mask设置为上文的环形layer,因为CAShapeLayer没有能处理颜色渐变的办法,所以只能换个办法,用CAGradientLayer.CAGradientLayer的用法很简单,看到代码就会用了.它也继承自CALayer.</p>
+
+<pre><code>let gra = CAGradientLayer()
+        gra.backgroundColor = UIColor.gray.cgColor
+        gra.colors = [UIColor.red.cgColor,UIColor.green.cgColor]//渐变的颜色
+        gra.locations = [0.3,1]//颜色变化的百分比
+        gra.frame = CGRect(x: 0, y: 0, width: 200, height: 200)
+        gra.position = self.view.center
+        gra.startPoint = CGPoint(x: 1, y: 0)//颜色开始的位置
+        gra.endPoint = CGPoint(x: 1, y: 1)//颜色结束的位置
+        gra.mask = layer//  通过mask属性来截取渐变层
+        self.view.layer.addSublayer(gra)
+</code></pre>
+
+<p><img src="media/15026719129123/15028679902914.jpg" alt="" style="width:317px;"/></p>
+
+<p>效果是这样的,当你把gra.mask设置为上文的环形layer的时候.<br/>
+<img src="media/15026719129123/15028680909612.jpg" alt="" style="width:181px;"/></p>
+
+<p>OK了,最后就是让它动起来了.想要动起来需要用到CABasicAnimation这个类,来控制<code>layer.strokeStart = 0//起始点 layer.strokeEnd = 0//结束点</code>,简单来说这个动画可以分为两部分,第一分部,layer.strokeEnd的值从零到1,第二部分,layer.strokeStart的值从0到1.然后循环代用就👌了</p>
+
+<pre><code>var an : CABasicAnimation!
+an = CABasicAnimation(keyPath: &quot;strokeEnd&quot;)
+        an.duration = 1
+        an.fromValue = 0
+        an.toValue = 1
+        an.delegate = self//设置代理在第一部分的动画结束的时候,开始第二部分的动画.
+        an.isRemovedOnCompletion = false
+        an.fillMode = kCAFillModeForwards
+//        an.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
+        an.timingFunction = CAMediaTimingFunction(controlPoints: 0.17, 0.76, 0.71, 0.15)
+        self.layer.add(an, forKey: &quot;com.CABasicAnimation1&quot;)
+</code></pre>
+
+<blockquote>
+<p>在CABasicAnimation中有三个属性,需要说明一下,第一个就是an.isRemovedOnCompletion = false,这属性的意思是在动画结束后是回到动画之前的layer还是保持动画之后的layer,第二个是an.fillMode = kCAFillModeForwards,这个属性只有在上一个属性是false的时候才会有效果.<a href="http://www.jianshu.com/p/91fccd32f6fb">这些属性有什么不同,这边博客有详细的说明</a>,以下说明是复制他文章中提到的.<br/>
+fillMode：决定当前对象在非active时间段的行为.比如动画开始之前,动画结束之后<br/>
+kCAFillModeRemoved 这个是默认值,也就是说当动画开始前和动画结束后,动画对layer都没有影响,动画结束后,layer会恢复到之前的状态（可以理解为动画执行完成后移除）</p>
+
+<p>kCAFillModeForwards 当动画结束后,layer会一直保持着动画最后的状态</p>
+
+<p>kCAFillModeBackwards 当在动画开始前,你只要把layer加入到一个动画中,layer便立即进入动画的初始状态并等待动画开始.你可以这样设定测试代码,延迟3秒让动画开始,只要动画被加入了layer,layer便处于动画初始状态<br/>
+第三个属性 an.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn),是动画持续这段时间的状态,苹果提供了几个简单的,先快后慢等,如果觉得不满意,可以自己写一个贝塞尔曲线去,类似于这种<code>an.timingFunction = CAMediaTimingFunction(controlPoints: 0.17, 0.76, 0.71, 0.15)</code>当然至于为什么贝塞尔曲线可以干这么多事,你可以去复习一下高中数学,顺便把导数,极限,微积分什么的都看看,充分体现了为什么数学学的好的人,代码写的好了.</p>
+</blockquote>
+
+<pre><code>extension ViewController : CAAnimationDelegate{
+    public func animationDidStop(_ anim: CAAnimation, finished flag: Bool){
+        if let aa = self.layer.animation(forKey: &quot;asd&quot;),anim == aa{
+            self.addFill12()//第二部分动画
+        }else{
+            layer.removeAllAnimations()//注意在下一次动画开始的时候要移除之前的动画
+            self.btnClick(1)//第一部分动画
+        }
+    }
+}
+var an1 : CABasicAnimation!
+    func addFill12() {
+        an1 = CABasicAnimation(keyPath: &quot;strokeStart&quot;)
+        an1.duration = 1
+        an1.fromValue = 0
+        an1.toValue = 1
+        an1.delegate = self
+        an1.isRemovedOnCompletion = false
+        an1.fillMode = kCAFillModeForwards
+        an1.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
+        self.layer.add(an1, forKey: &quot;com.CABasicAnimation2&quot;)
+    }
+</code></pre>
+
+<h4 id="toc_2">总结</h4>
+
+<blockquote>
+<p>这篇博客只是说了一些简单的动画是如何实现的,如果从实现的角度来讲,我觉得没有什么难度,个人感觉真正难的地方在于复杂动画时,对于各种动画路线,函数,效果的计算,对于我这种高中数学忘的差不多的人来说,确实是个挑战.如果有机会,下一篇微博我会亲自试一试复杂动画的实现,看一看自己的数学功底.<br/>
+<a href="https://github.com/RookieNeo/CALayer">Demo</a></p>
+</blockquote>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[基于Alamofire网络库的二次封装]]></title>
+    <link href="https://rookieneo.github.io/15017218903153.html"/>
+    <updated>2017-08-03T08:58:10+08:00</updated>
+    <id>https://rookieneo.github.io/15017218903153.html</id>
+    <content type="html"><![CDATA[
+<p>Alamofire作为一个Swift的网络框架被开发者们大量使用在自己的项目中,但处于公司的业务,统一处理,后期换库  <del>但实际可能永远不会</del> 等多方面的考虑,一般都会对其进行二次封装.由于公司项目的网络框架是我写的,并进过了多次重构,优化,我觉得可以满足大部分的日常需要,所以我准备拿出来和大家讨论一下.</p>
+
+<h4 id="toc_0">1</h4>
+
+<p>首先我准备把框架分为业务层,数据层(整合数据,加密,统一处理的位置)和最后的网络层.其实之前也有想直接分两层,但是为了换库的时候没有痛感,最后还是考虑分为三层了,将网络层由中间层调用,所以换库之后,业务层不会有改动,而且数据整合解析层 也不会有改动.而且还有一点考虑,之后我会提到.<br/>
+<img src="media/15017218903153/15018086716115.jpg" alt="" style="width:234px;"/><br/>
+下面我就说一下我设计时候的思路.</p>
+
+<h4 id="toc_1">2定义接口</h4>
+
+<p>也就是业务层需要发起网络请求时候的接口.我定义的接口是这样的<br/>
+<img src="media/15017218903153/15018095032823.jpg" alt="" style="width:2800px;"/></p>
+
+<pre><code>@discardableResult class func request(withInterface interface: URLConfig,requestData: [String:Any]?,method : NetHTTPMethod = .Post,serverType : RequestType = RequestType.hhtServer,completed: @escaping(_ dataResult : DataResult&lt;Dictionary&lt;String, Any&gt;&gt;) -&gt; Void) -&gt; URLSessionTask?
+</code></pre>
+
+<p>至于为什么定义成这样子,我一个参数一个参数的解释,其实解释完了,这篇博客也就差不多了.</p>
+
+<h6 id="toc_2">首先第一个参数interface: URLConfig</h6>
+
+<p>URLConfig是一个协议.内容很简单</p>
+
+<pre><code>protocol URLConfig{
+    func getPath() -&gt; String
+}
+</code></pre>
+
+<p>就只有一个<code>getPath</code>的方法,目的是获取接口的url路径,有人会说,那为什么要定义一个协议呢?直接一个<code>String</code>类型不就可以了吗?这样做有一个好处,大家有没有发现,让你直接调用Alamofire的时候,可以传String,也可以传URL,都可以,因为它的类型也是一个协议呀,String和URL都实现了这个协议就ok拉,所以我也是这样做的.其实就是面向对象中的多态.</p>
+
+<h6 id="toc_3">接口的管理</h6>
+
+<p>在项目中我是用枚举关联String管理接口的,这样的好处是接口统一在一个位置,清晰,易扩展,好维护.<br/>
+<img src="media/15017218903153/15018108531635.jpg" alt=""/><br/>
+枚举同样也实现了URLConfig协议,在调用网络接口的时候,第一个参数只需要填入<code>InterfaceEnum.devAuth</code>就可以了,可能有朋友会有疑问,基本每个公司开发接口,测试接口,正式接口,有的时候你们公司对接别的服务器,还有有不同的协议,比如你们用https他们用http的情况,切换环境,我用一个全局变量就ok了,就是NetConfig.curServerIP,只要把curServerIP换了,环境也就切换了,但是一部分用http,另一部分用https,或有的时候你和同事联调,100个接口有10个跑他的ip,90个跑服务器的,怎么办呢?其实很简单,这就体现了协议的好处,你在建一个<code>InterfaceXXXXEnum</code>,再实现一个getPath协议,这次你可以拼接成https://  也可以拼接成ftp的都可以了,这样做之后,你会发现,你的接口管理的很清晰,那个接口是http的  哪个是https的,哪个是XXX的,一看就知道了,统一了管理.</p>
+
+<h6 id="toc_4">第二个参数是接口中需要的参数,这个没啥好说的</h6>
+
+<h6 id="toc_5">第三个是请求的方式</h6>
+
+<p>是GET还是POST,按理说这个也没啥好说的,但是有一点我希望在这里说明,也就是我上文我说的之后我会说的,由于我们用的是AlamoFire,他有自己的请求类型枚举<br/>
+<img src="media/15017218903153/15018121396577.jpg" alt=""/><br/>
+但是我不想用它,因为我们进行二次封装的目的是什么,是隔离,不想让他对项目有太多的入侵,所以这也是我建这个中间层的第二个目的,在中间层,把所有数据转换成Foundation框架的基本类型,传递给Alamofire,这样,后期无论怎么换,只要有Foundation在,我的框架就不由会大问题.所以我自己也建了一个枚举跟上面的枚举差不多,只不过区别是他是他的,我是我的~~.<br/>
+<img src="media/15017218903153/15018126056939.jpg" alt=""/></p>
+
+<h6 id="toc_6">第四个参数,serverType</h6>
+
+<p>在实际开发中,有很多时候你对接的不是一个服务器,比如美团,微信,阿里他的项目中嵌入了好多别人的项目,虽然这些项目的网络请求会在自己的sdk中解决,但是难免会出现一个项目跑两个服务器的情况,就像我们公司海底捞重构的项目,前端和后端一起重构,但是前端之前有过UI重构的经验了,所以写起来要比后端快的多,所以我们在重构的时候大部分还是用的老接口,这时候,有个后端的大哥说,那个我这几个接口做好了,你试试吧,但是他的这几个接口是有前置条件了,但这些前置条件在新的服务器中还没有实现,这时候你就需要前置接口调用老服务器,新接口调用新服务器,不同的服务器,加密解密方式,数据的拼接要求肯定是不同的,所以我就又造了一个枚举,<code>ServerType</code><br/>
+<img src="media/15017218903153/15018134572100.jpg" alt=""/><br/>
+有个这个枚举之后,就可以根据不用的服务器,做不同的加密,数据返回后做不同的解析了.</p>
+
+<h6 id="toc_7">然后就是最后一个参数了,回调函数.</h6>
+
+<p>这个回调函数其实也没什么说的,但是我对数据做了一层封装,就是DataResult的数据类型,至于为什么,我的Swift的一种常用类型那篇博文里有说明,大家可以去看看.</p>
+
+<h6 id="toc_8">最后作为一个网络请求,你的返回值是什么</h6>
+
+<p>它是什么,取决你要拿它干嘛用,很多时候,在轮询的场景下,一个请求没完成,不能发起下一个请求,或是把上一个请求取消,所以我就把<code>URLSessionTask</code>返回了,其实Alamofire也有自己的Task,但是我还是坚持返回了<code>Foundation</code>框架里的类型,至于为啥就不多说了.</p>
+
+<h4 id="toc_9">3核心的实现</h4>
+
+<p>网络核心层当然后调用Alamofire了,这部分就比较简单了.在这之前,先看下上面讲的接口的实现.<br/>
+<img src="media/15017218903153/15018136557339.jpg" alt=""/><br/>
+default就是核心层的单例</p>
+
+<pre><code>private static let `default` : RequestManagerProtocol = RequestManager()
+</code></pre>
+
+<p><img src="media/15017218903153/15018138410087.jpg" alt=""/><br/>
+这一层中,还是一个协议,保证了接口的统一,如果有换库等行为,只要实现了这个协议,就可以保证对外暴露的接口不变.        </p>
+
+<h4 id="toc_10">业务层的调用</h4>
+
+<p>尽管我们接口中有很多参数,但是大部分都有默认参数,所以大部分情况下,业务端是不需要知道全部参数的,他只需要知道两个参数,一个是接口地址,一个是要传的参数</p>
+
+<pre><code>NetRequest.request(withInterface: InterfaceEnum.cashNeedMoney, requestData: params) { (data) in
+            switch data {
+            case .failure(let error):
+                complete(DataResult.failure(error))
+            case .success(let value):
+                let money = (value[&quot;DATA&quot;] as? NSNumber) ?? 0
+                complete(DataResult.success(money))
+            }
+        }
+</code></pre>
+
+<p>仅此而已,这就够了.</p>
+
+<h4 id="toc_11">思考</h4>
+
+<p>到目前为止,我的这个封装完全满足了项目的需求,但是也有在考虑要不要增加返回数据的类型,现在我只支持返回字典,但是这样做我也是有自己的想法的,因为一个项目业务端的解析方式大都很固定,我给他们暴露了太多的接口,反而会导致业务端调用的混乱,毕竟我是二次封装,如果写的太多了,就不是二次封装了.下一篇博客,我会分析Alamofire的源码,并提出我的疑惑,欢迎来撕~</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Swift中对于有先后顺序的网络请求的优化]]></title>
+    <link href="https://rookieneo.github.io/15008764200399.html"/>
+    <updated>2017-07-24T14:07:00+08:00</updated>
+    <id>https://rookieneo.github.io/15008764200399.html</id>
+    <content type="html"><![CDATA[
+<p>在实际开发中会有很多场景是需要发送多个网络请求的,并且它们之间有逻辑关系,比如餐厅APP中,用户需要先确认账单才能打印账单,并且是确认账单成功了才能打印账单,对于这种问题有几种解决方法:</p>
+
+<h4 id="toc_0">1让后端的大哥改下</h4>
+
+<p>也就是说你可以找你的后端让他帮你在确认账单接口调用的时候调用下打印账单的方法,说实话以前我真的喜欢这么干,但是后来我发现我错了,因为这样做两个业务就耦合在一起了,如果以后还有人要调用这个接口,他绝对想不到这个接口还会触发打印.所以这不是一个好办法.</p>
+
+<h4 id="toc_1">2嵌套调用</h4>
+
+<p><img src="media/15008764200399/15008775374587.jpg" alt=""/></p>
+
+<p>这是我最开始写的代码,我在调用确认账单,并且返回成功了之后,又调用了打印账单.这样做看似是可以了,但是不够好,因为这才两个请求,如果有四五请求有这种业务上的需求,嵌套在一起就回显得很乱,比如:<br/>
+<img src="media/15008764200399/15008777031048.jpg" alt=""/></p>
+
+<p>相信在你看到这种网络请求的时候各种各样的回调的时候,你是绝望的.它很不清晰,把闭包的缺点表现的淋漓尽致.所以这个方法也不好,但它是可用的.</p>
+
+<h4 id="toc_2">3依赖队列</h4>
+
+<p><img src="media/15008764200399/15008778898419.jpg" alt=""/></p>
+
+<p>这是我使用队列最初的想法,首先这两个网络请求是串行的,我的想法是用依赖,printOp依赖于makeSureOp,也就是说只有当确认账单的请求执行完了之后,才会调用打印的接口.事物总是看似美好,其实并没有这么简单.这中队列是不行的,原因有两点,第一点,第一个任务无论最后是成功还是失败,都会调用打印任务,这样是不符合业务.第二点因为网络请求是异步的,所以这个依赖的添加是无效的,第一个任务的网络请求还没有返回,第二个就已经开始了,这个位置我也不是特别理解,为什么依赖是能在同一线程中起作用.</p>
+
+<h4 id="toc_3">优化队列</h4>
+
+<p><img src="media/15008764200399/15008784802926.jpg" alt=""/></p>
+
+<p>这是我优化之后的方法.首先向队列中添加一个确认账单的任务,在成功之后再向队列中添加打印任务.这样做之后,业务实现了,代码也清晰了,就有4 5个有顺序的请求,也很清晰,只需要在成功的地方向队列中添加任务就可以了.<br/>
+总结:<br/>
+    在实际开发中,这种需求有别于批量下载图片的需求,因为批量下载图片任务之间并没有业务关系,你完全可以建一个GCD的组,每一次下载图片的时候都向组里添加任务,当组中的任务都完成的之后,就是所有图片都下载完了,就算下载不成功,对后续的任务也不会有影响.但是它解决不了接口和接口直接有业务关系的问题,因为下载图片,每个任务都是独立的,异步的,但是这个问题,所有的请求其实是串行的,同步的,有关系的.所以我采用的这种方法来实现,具体怎么样,还需要实践.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Whats-new-in-swift-4 (下)]]></title>
+    <link href="https://rookieneo.github.io/14970555001135.html"/>
+    <updated>2017-06-10T08:45:00+08:00</updated>
+    <id>https://rookieneo.github.io/14970555001135.html</id>
+    <content type="html"><![CDATA[
+<h4 id="toc_0">Dictionary and Set enhancements</h4>
+
+<p>关于字典的改进都是很直观的.</p>
+
+<pre><code>let names = [&quot;Cagney&quot;, &quot;Lacey&quot;, &quot;Bensen&quot;]
+let dict = Dictionary(uniqueKeysWithValues: zip(1..., names))
+//print [2: &quot;Lacey&quot;, 3: &quot;Bensen&quot;, 1: &quot;Cagney&quot;]
+dict[2]
+print Lacey
+//
+</code></pre>
+
+<pre><code>let contacts = [&quot;Julia&quot;, &quot;Susan&quot;, &quot;John&quot;, &quot;Alice&quot;, &quot;Alex&quot;]
+let grouped = Dictionary(grouping: contacts, by: { $0.first! })
+grouped
+//print [&quot;J&quot;: [&quot;Julia&quot;, &quot;John&quot;], &quot;S&quot;: [&quot;Susan&quot;], &quot;A&quot;: [&quot;Alice&quot;, &quot;Alex&quot;]]
+</code></pre>
+
+<p>很多时候服务器返回的JSON并不会给你分组,但是很有需求是需要在list中分组的,这个方法是很好的.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Whats-new-in-swift-4 (上)]]></title>
+    <link href="https://rookieneo.github.io/14969065461458.html"/>
+    <updated>2017-06-08T15:22:26+08:00</updated>
+    <id>https://rookieneo.github.io/14969065461458.html</id>
+    <content type="html"><![CDATA[
+<p>Swift4终于到4了,这次升级对之前的版本有很好的兼容,而且也有一些很不错的API<br/>
+于是我是看了 Ole Begemann这位外国友人的github的Swift4的playground<a href="https://github.com/ole/whats-new-in-swift-4">传送门</a>总结了一下,这种东西,还是老外搞得好,国内真的不行...</p>
+
+<h4 id="toc_0">Strings</h4>
+
+<ol>
+<li>第一个就是String,增加了<code>&quot;&quot;&quot;</code>这个功能
+栗子:</li>
+</ol>
+
+<pre><code class="language-swift">let multilineString = &quot;&quot;&quot;
+        This is a multi-line string.
+    You don&#39;t have to escape &quot;quotes&quot; in here.
+    The position of the closing delimiter
+      controls whitespace stripping
+    &quot;&quot;&quot;
+print(multilineString)
+</code></pre>
+
+<p>打印出来的效果是这个样子的<br/>
+<img src="media/14969065461458/14969075270793.jpg" alt=""/><br/>
+没错,就是和你在代码里写的空行一模一样,不需要打换行符和空格了,不知道大家觉得如何,我是觉得非常好,因为...<br/>
+<img src="media/14969065461458/14969077073633.jpg" alt=""/><br/>
+我只是为了让网络请求的打印的日志好看一点,把代码写成这样也是很蓝瘦的,不过现在有&quot;&quot;&quot;就好了<br/>
+2. String终于有.count了 不容易,而且取subString什么的更容易了,我自己项目里的String的extension终于可以去掉了,人家写的确实比我好,嘿嘿</p>
+
+<pre><code class="language-swift">let greeting = &quot;Hello, 😜!&quot;
+let comma = greeting.index(of: &quot;,&quot;)!
+let substring = greeting[..&lt;comma]
+//print Hello
+</code></pre>
+
+<h4 id="toc_1">SubScripts</h4>
+
+<p>1.<br/>
+这个不用说,秒懂,感觉还好,以前用着也不费劲</p>
+
+<pre><code class="language-swift">let numbers = [1,2,3,4,5,6,7,8,9,10]
+numbers[5...] // instead of numbers[5..&lt;numbers.endIndex]
+//print Hello
+</code></pre>
+
+<h4 id="toc_2">Private declarations visible in same-file extensions</h4>
+
+<p>同一个文件下的Extensions中用到的Private属性可以不用改为filePrivate了,这个改动很好,因为同一个文件下的类的扩展,本身就同一个类,为什么我在类的方法中调用自己的属性,还需要用fileprivate,就很奇怪,当初我用的时候就感觉很难受,一使用extension就需要改权限...<br/>
+<img src="media/14969065461458/14969090403987.jpg" alt=""/><br/>
+如果在swift3中,stroage这个属性是要改成fileprivate的.</p>
+
+<h4 id="toc_3">Key Paths</h4>
+
+<p><img src="media/14969065461458/14969097853215.jpg" alt="" style="width:1860px;"/></p>
+
+<pre><code class="language-swift">sicp[keyPath: \Book.title]
+sicp.title
+//print same Structure and Interpretation of Computer Programs
+sicp[keyPath: \Book.title]
+sicp[keyPath: \Book.primaryAuthor.name]
+//print Harold Abelson
+</code></pre>
+
+<p>结构体中的属性可以像路径一样被取出<br/>
+当然也可以拼接路径 就像这样</p>
+
+<pre><code class="language-Swfit">let authorKeyPath = \Book.primaryAuthor
+type(of: authorKeyPath)
+let nameKeyPath = authorKeyPath.appending(path: \.name) // you can omit the type name if the compiler can infer it
+sicp[keyPath: nameKeyPath]
+//print  Harold Abelson
+</code></pre>
+
+<p>虽然我现在也不是太理解这样好处,但是能感觉出来这个一个很重大的改进,很多大神都可能会在这做文章,期待.</p>
+
+<h4 id="toc_4">Encoding and decoding 重头戏</h4>
+
+<p>这个是已经被公认的一个重大的提升,先举栗子</p>
+
+<p><img src="media/14969065461458/14969104547178.jpg" alt=""/><br/>
+这是一个结构体,有一点特殊,它遵循了Codable协议,hand数组中初始化了两个Card.<br/>
+然后~<br/>
+Encoding</p>
+
+<pre><code class="language-Swfit">var encoder = JSONEncoder()
+
+// Properties offered by JSONEncoder to customize output
+encoder.dataEncodingStrategy
+encoder.dateEncodingStrategy
+encoder.nonConformingFloatEncodingStrategy
+encoder.outputFormatting
+encoder.userInfo
+
+let jsonData = try encoder.encode(hand)
+String(data: jsonData, encoding: .utf8)
+//print &quot;[{\&quot;rank\&quot;:1,\&quot;suit\&quot;:\&quot;clubs\&quot;},{\&quot;rank\&quot;:12,\&quot;suit\&quot;:\&quot;hearts\&quot;}]&quot;
+//你没有看错  它是JSON了
+</code></pre>
+
+<p>Decoding</p>
+
+<pre><code class="language-Swift">let decoder = JSONDecoder()
+let decoded = try decoder.decode([Card].self, from: jsonData)
+// decoder 现在和截图中hand是一模一样的了666
+</code></pre>
+
+<p>系统的API帮我们做了json解析,这是非常好的.<br/>
+结构体是值类型,适用于单向数据流的数据传输方式,不过移动端的数据流一般都是双向的,意思就是你引用了别人的model,你把model中的数据给改了,那别人的model对应的数据也改了,因为大家的model用的都是类,而不是结构体,是引用类型,这样做在移动端是很方便的,但是也有很多弊端,比如你改了别人的数据,但是那哥们却不知道,这是很危险的,如果项目比较大,这老哥就为了知道是谁改了他数据就能找半天,但是结构体是值类型,就不会有这个问题,因为每次赋值,都是一个新的,这样就很安全,但是你每次改数据都需要调用别人的接口,这样就会很繁琐,而且数据的一致性和保持不了,在web前端有流行的框架中,react,vue(排名不分先后)都是单向数据,但是他们也有双向绑定的机制,也有很好的框架保证数据的准确.移动端这样的框架也有,只不过没有流行起来<br/>
+所以我就测试了一下类是不是也可以这样搞,结果是可以,皆大欢喜,引用类型也可以遵循Codable协议,来实现和JSON数据的互转.</p>
+
+<h4 id="toc_5">Generic subscripts 角标方法中可以使用泛型了</h4>
+
+<p>这是一个很好的消息,这会使得subscripts的使用变得更广泛,更已用,我在之前封装的UserDefaults方法中就因为角标方法中不能使用泛型限制了我的思路,现在终于可以实现了. </p>
+
+<pre><code class="language-Swift">subscript&lt;T&gt;(key: String) -&gt; T? {
+        return storage[key] as? T
+    }
+</code></pre>
+
+<p>相信用过subscipt方法的看到这个栗子会很激动,没用过的,也感受不到Swift3中不能使用泛型的困扰了</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Swift中对UserDefaults的封装]]></title>
+    <link href="https://rookieneo.github.io/14956811508929.html"/>
+    <updated>2017-05-25T10:59:10+08:00</updated>
+    <id>https://rookieneo.github.io/14956811508929.html</id>
+    <content type="html"><![CDATA[
+<p>Founddation中UserDefaults是一种很轻量化的本地化工具,实际开发中经常会使用,由于苹果中很多类库还没有用Swift重写,所以在Swift中用UserDefaults就显示不是很Swift,还是OC的感觉,所以我就想对UserDefaults进行一次封装,让它更Swift,用起来更方便.我最早由这种想法实在Swift2的时候,那时候就感觉用起来不是很方便了,但是没有多想,之后又看到了一篇文章<a href="http://radex.io/swift/nsuserdefaults/">传送门</a>,它是用Swift中subscript的方法对NSUserDefaults进行了封装,Swift中,Dic[key],Array[index],都是使用了subscript方法.我就是参照这位外国友人的思路进行了封装.</p>
+
+<h2 id="toc_0">[subscript] + 泛型 的方式</h2>
+
+<p>这是我最开始的设计思路,先看代码</p>
+
+<pre><code class="language-Swift">protocol UserDefaultProtocol {
+    func getKey() -&gt; String
+}
+enum DefaultsKey: String,UserDefaultProtocol {
+    case token
+    case name
+    case mobile
+    func getKey() -&gt; String {
+        return self.rawValue
+    }
+}
+public let Defaults = UserDefaults.standard
+extension UserDefaults {
+    
+    subscript(key: UserDefaultProtocol) -&gt; Fakegenericity {
+        return Fakegenericity(self, key.getKey())
+    }
+    subscript(key: UserDefaultProtocol) -&gt; Any?{
+        get{
+            let genericity : Fakegenericity = self[key]
+            return genericity
+        }
+        set{
+            guard let newValue = newValue else {
+                removeObject(forKey: key.getKey())
+                return
+            }
+            switch newValue {
+            case let v as Double:
+                self.set(v, forKey: key.getKey())
+            case let v as Int:
+                self.set(v, forKey: key.getKey())
+            case let v as Bool:
+                self.set(v, forKey: key.getKey())
+            case let v as URL:
+                self.set(v, forKey: key.getKey())
+            default:
+                self.set(newValue, forKey: key.getKey())
+            }
+        }
+    }
+    ///直接根据key取int  double等  就算取不到  也会返回 0  当有要存储0的需求时候  会有问题  所以 用过根据 object 去数据转 nsnumer  判断number?  使取 bool int等类型时  没有值会返回nil
+    func numberForKey(_ key: String) -&gt; NSNumber? {
+        return object(forKey: key) as? NSNumber
+    }
+    
+    /// Returns `true` if `key` exists
+    func hasKey(key: UserDefaultProtocol) -&gt; Bool {
+        return object(forKey: key.getKey()) != nil
+    }
+    
+    func removeAll(){
+        for(key,_) in dictionaryRepresentation() {
+            removeObject(forKey: key)
+        }
+    }
+    func remove(key: UserDefaultProtocol){
+        removeObject(forKey: key.getKey())
+    }
+    class Fakegenericity {
+        fileprivate let defaults: UserDefaults
+        fileprivate let key: String
+        
+        fileprivate init(_ defaults: UserDefaults, _ key: String) {
+            self.defaults = defaults
+            self.key = key
+        }
+        
+        // MARK: only - get
+        public var object: Any? {
+            return defaults.object(forKey: key)
+        }
+        
+        public var string: String? {
+            return defaults.string(forKey: key)
+        }
+        
+        public var array: [Any]? {
+            return defaults.array(forKey: key)
+        }
+        
+        public var dictionary: [String: Any]? {
+            return defaults.dictionary(forKey: key)
+        }
+        
+        public var data: Data? {
+            return defaults.data(forKey: key)
+        }
+        
+        //        public var date: Date? {
+        //            return object as? Date
+        //        }
+        
+        public var number: NSNumber? {
+            return defaults.numberForKey(key)
+        }
+        
+        public var int: Int? {
+            return number?.intValue
+        }
+        
+        public var double: Double? {
+            return number?.doubleValue
+        }
+        
+        public var bool: Bool? {
+            return number?.boolValue
+        }
+        
+        
+        public var stringValue: String {
+            return string ?? &quot;&quot;
+        }
+        
+        public var arrayValue: [Any] {
+            return array ?? []
+        }
+        
+        public var dictionaryValue: [String: Any] {
+            return dictionary ?? [:]
+        }
+        
+        public var dataValue: Data {
+            return data ?? Data()
+        }
+        
+        public var intValue: Int {
+            return int ?? 0
+        }
+        
+        public var doubleValue: Double {
+            return double ?? 0
+        }
+        
+        public var boolValue: Bool {
+            return bool ?? false
+        }
+    }
+}
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Swift的一种常用类型]]></title>
+    <link href="https://rookieneo.github.io/14936932217611.html"/>
+    <updated>2017-05-02T10:47:01+08:00</updated>
+    <id>https://rookieneo.github.io/14936932217611.html</id>
+    <content type="html"><![CDATA[
+<p><img src="media/14936911497977/14936911882116.jpg" alt=""/></p>
+
+<h6 id="toc_0">这是我在公司项目用到的一种用于网络请求返回数据的类型,我第一次见到它是Alamofire的源码中,他对网络请求的数据就进行了一种这样的封装,当时就觉得不错,不过并没有在意,后来又在喵神翻译的swift进阶中又看了,于是就抱着试一试的态度用一下,果然效果还是不错的.</h6>
+
+<h5 id="toc_1">我个人认为这是一个加强版的可选类型,其实可选类型就是一个枚举值,有value和nil两个枚举值,这个DataResult也是一个枚举值,有error和value两种枚举值,区别是可选类型对返回时nil的情况并不在意,更在意的是结果,只要告诉我有或者没有就可以了,而DataResult类型比可选类型更重视返回错误时的情况,所以我觉得这很适合用在网络请求的返回值中,有数据的时候就是成功,没有数据的时候就是失败,失败的时候返回error类型给业务层做相应的处理.</h5>
+
+<p><img src="media/14936911497977/14936925384241.jpg" alt=""/><br/>
+这是业务层的使用情况,data就是DataResult类型,也可以使用if else 还做处理,这就是extension中isSuccess和isFailure的作用.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[按钮加下拉弹框控件的封装]]></title>
+    <link href="https://rookieneo.github.io/14924176125873.html"/>
+    <updated>2017-04-17T16:26:52+08:00</updated>
+    <id>https://rookieneo.github.io/14924176125873.html</id>
+    <content type="html"><![CDATA[
+<h4 id="toc_0">直接上图</h4>
+
+<p><img src="media/14924176125873/1F2A7756-BAA8-4521-8122-3C2F3C180AD5.png" alt="1F2A7756-BAA8-4521-8122-3C2F3C180AD5"/><br/>
+由于项目里用到好多这种点击上面的按钮,下拉出一个tableView弹框的需求,所以我决定单独封装一个.</p>
+
+<h4 id="toc_1">需求和思路</h4>
+
+<ol>
+<li>需求:点击上面的按钮,弹出一个下拉框,点击下拉框中的cell,tableView消失,按钮刷新为选中的cell.</li>
+<li>思路:因为有些地方用上面的按钮控件,有些地方只用下面的控件,有些地方又两个要在一起用,所以我决定封装两个简单的View控件,在单独封装一个View,将两个控件做到一起.</li>
+</ol>
+
+<h4 id="toc_2">Go!</h4>
+
+<ol>
+<li>封装按钮控件</li>
+</ol>
+
+<p><img src="media/14924176125873/WechatIMG243.jpeg" alt="WechatIMG243"/></p>
+
+<p>既然是封装,那么这个按钮的宽度就一定不能是死的,所以我决定只设置红色位置的layout,整体控件的宽度由&quot;班次&quot;&quot;全部&quot;两个Label和图片撑开,传入的String多宽控件就多宽.<br/>
+   UI的问题解决了,剩下的就是如何初始化和配置还有时间传递的问题了,首先要使用这个控件就必须有两个参数,就是两个String,所以我在初始化方法中添加两个参数,而例如两个Label的颜色这种数据作为public属性,可配置.当然还需要两个get set方法的属性,用于初始化控件后,改变控件上的文字,so,控件的初始化方法和暴露的属性是这个样子的:<br/>
+   <img src="media/14924176125873/WechatIMG247.jpeg" alt="WechatIMG247" style="width:572px;"/><br/>
+图中代码上面的初始化的方法和属性,两个Public属性的get和set方法是用于读和设置label的,之所以这么做是因为我觉得分装的控件不应该暴露出UIlabel这种东西(个人想法)所以我用了这种方法对label做了一层处理而真正的label是private的.还有一点要说的是第二个框的代码,我构建UI的位置是在viewdidMovetoSuperView中的时候,是因为放在初始化中会导致设置的字体颜色无效,因为给label设置颜色的位置在configUI方法中.在初始化中调用会导致先调用了configUI,然后才给left or right Color 赋值.点击的事件我选择用代理方法,参数是btn选中的状态ture or false.<br/>
+2. 封装下拉控件<br/>
+<img src="media/14924176125873/14924213229065.jpg" alt=""/><br/>
+下拉控件中,我是暴露了一个属性,就是tableView每一个行的高度,初始化中,必须传入tableView的数据.并设置了tableView的阴影,因为项目里的这个控件都需要有阴影,如果其他项目不需要其实可以暴露一个bool属性,控制一下阴影效果.<br/>
+<img src="media/14924176125873/14924214894815.jpg" alt=""/></p>
+
+<ol>
+<li>将两个控件封装成一个控件
+<img src="media/14924176125873/14924215554777.jpg" alt=""/></li>
+</ol>
+
+<p>这是我封装的新控件的所有暴露的方法,我会一个个的解释这个写的目的,首先第一个属性,isAppeared属性,在每次set之后都会判断它的值,如果是true就创建下拉tableView的控件,如果是false就删除.现在didset中的目的就是配合第一个按钮的控件<br/>
+<img src="media/14924176125873/14924217419848.jpg" alt=""/><br/>
+这是按钮控件的代理方法的实现,在这个代理方法中,我只需要改变一下isAppear的值就可以控制显示隐藏,而isAppear的值就是按钮控件通过代理方法传给我的值,可能有朋友会觉得那把isAppeard里的代码放到按钮控件的代理方法不也一样么,这个地方我的想法是下拉控件的显示和隐藏不应该是有控件的内部可以控制,如果我点出了拉下控件,用户点击别的位置,按照用户习惯,这个弹框应该收起,所以我才写了isAppeared这个属性,这样以来,外部和内部都可以控制下拉控件的显示和隐藏.<br/>
+剩下的pullDownHeight和listViewHeight属性是用来控制整个控件的高度和下拉控件的高度的,至于为什么没有暴露出设置宽度的属性,是因为我觉觉得这个控件既然是两个控件的融合,那么下拉框的宽度因为和按钮控件保持一致,而按钮控件的宽度又是由里面的title决定的,所以我没有暴露出宽度的属性.<br/>
+<img src="media/14924176125873/14924223637448.jpg" alt=""/><br/>
+最后实现拉下控件的代理方法,根据用户点击的cell改变按钮控件的rightLabel的text,当然也是通过修改按钮控件暴露的rightText属性的set方法,而不是直接修改Label的方式.个人认为比较优雅一下,直接改label感觉很暴力.最后在将点击的时间传在control层,分别将点击的index和title传出,方便使用者根据用户的点击做出响应.</p>
+
+<h4 id="toc_3">总结</h4>
+
+<p>其实这个控件的分装没有太大的难度,我自己觉得通过这次封装,一是将两个控件封装到一起,并且其中任何一个控件又都可以单独拿出来用的这种封装方式有了一定的认识,二是如何封装出优雅的可用的控件,不该暴露的属性就不要多暴露,让使用者一目了然,初始化的方法参数能少则少,参数越多,使用难度越大,一起不必要的参数都设置为有默认值可配置的形式.<br/>
+代码我会在稍后传到我的github上<br/>
+<a href="https://github.com/RookieNeo">传送门</a></p>
+
+]]></content>
+  </entry>
+  
+</feed>
