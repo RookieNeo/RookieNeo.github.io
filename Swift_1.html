@@ -47,6 +47,12 @@
         <li><label>Swift</label></li>
 
           
+            <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
+          
+            <li><a title="2018总结" href="15476925512340.html">2018总结</a></li>
+          
+            <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
+          
             <li><a title="关于HTTPS的探究" href="15221395300202.html">关于HTTPS的探究</a></li>
           
             <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
@@ -88,6 +94,12 @@
                     
                       <li class="side-title"><span>Swift</span></li>
                         
+                          <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
+                        
+                          <li><a title="2018总结" href="15476925512340.html">2018总结</a></li>
+                        
+                          <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
+                        
                           <li><a title="关于HTTPS的探究" href="15221395300202.html">关于HTTPS的探究</a></li>
                         
                           <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
@@ -124,127 +136,243 @@
 
 	
 		<div class="markdown-body">
-		<h1>对Swift写时复制技术的理解</h1>
+		<h1>沙漏动画</h1>
 
-		<p><font color=#5F9EA0 size=3 ></p>
+		<p>最近有个新的需求，要做一个沙漏动画。说实话当我看到设计师给我的效果时候，确确实实难到我了。我以前很少做动画相关的东西，接触的也都比较简单。但是我还是比较高兴的，因为我非常喜欢这种免费的学习的机会，每天都做一些会做的东西就很没劲。废话不多说，开始吧。</p>
 
-<blockquote>
-<p>最近又重新在研究数据结构(<del>当然大学时候学的也不咋地</del>😜)打算把一些经典的数据结构用Swift语言重新实现一遍.虽然在实际开发中,很多高级的数据结构,算法都不需要你来写,我相信每一种语言,都有足够多的框架提供近乎完美的API供你日常开发,这会造成一种幻觉,就是你会觉的这些基础的东西不重要,我理不理解它并不会对我有太大影响,我会调用几个API就足矣.但作为一个coder(其实很多行业也是一样),对基础知识理解的深度,在很大程度上决定了在这条路上你的上限在哪里.<br/>
-</font></p>
-</blockquote>
+<h4 id="toc_0">先看下效果</h4>
 
-<h4 id="toc_0">背景</h4>
+<p><img src="media/15367255656449/shdowClocktop5.gif" alt="shdowClocktop5"/></p>
 
-<p>其实很早之前我就想仔细的深入的用Swift研究一次数据结构了,但由于一直没有找到好的书籍,这个计划就被挂起了🤕.最近看喵神翻译的新书&lt;&lt;集合类型优化&gt;&gt;出版了<a href="https://objccn.io/products/optimizing-collections/preview/">传送门</a>,借此机会,正好潜心研究一下.<br/>
-书中的第一节就提到了写时复制技术,这个词相信使用Swift的开发者都是既熟悉又陌生的.我也听过好多次,在Swift进阶中,我就看到过(<del>写博客的好处之一就是你想把东西讲明白要比你自己看明白深刻好几倍</del>),所以就先研究一下写时复制技术.</p>
+<p>我刚看到的时候，其实是无从下手的，根本不知道从哪里开始，后来一个朋友和我说，你应该把它分解开，一起看肯定很麻烦，比如先实现沙漏里上半部分沙堆的动画，在实现下半部分，在实现沙子的，最后做旋转。一点点来。这么说完，我觉得还是比较好的，把难得问题分解成一个个小问题，逐个解决，而且这也可以保证每个小模块之间相互不影响，你一个问题设计的不好，不会牵连其他的，后期优化也方便，最后的动画是由这些动画组合上的。那开始吧~</p>
 
-<h4 id="toc_1">值类型和引用类型的区别,什么是值语义</h4>
+<h4 id="toc_1">沙堆下半部分动画</h4>
 
-<p>值类型和引用类型的区别这点顺带说一下就行,引用类型的具体表现就是我们最常用的类,通过引用计数来管理,通常我们赋值等操作,只会复制一个指针,指向它所在的内存地址,多一个引用,引用计数就+1,增加了效率,但是不安全(我在<code>Whats new in Swift4</code>这篇博客中的Encoding and decoding中有提到).值类型我们也经常用,Int类型,char,struct都是值类型,将一个值类型变量赋给另一个值类型变量时，将复制包含的值,具有新的内存地址,但这样做是代价是昂贵的(Swift做了优化,后面会解释).<br/>
-那什么又是<code>值语义</code>,假设这样的场景,你有一个Class,里面所有的属性(也是引用类型的)都是私有的private,你不想让外部直接用,外部如果需要使用,可以调用暴露的get方法,你把私有属性返回给他,但其实这个时候,这个属性已经不在是私有的了,因为引用类型的特点,外部已经拿到了私有属性的指针,可以对他进行任务操作,很不安全.<br/>
-<img src="media/15034498083541/15034528025928.jpg" alt="" style="width:864px;"/><br/>
-图中对象b的str改变了,a中的subA对应的属性也跟着改变了.这显然不是你想要效果.需要改造一下,方法也很简单<br/>
-<img src="media/15034498083541/15034533452055.jpg" alt=""/><br/>
-如果是继承NSObject的类,可以直接用copy来复制.不管怎么说 效果是实现了,它是一个引用类型,但是表现的确实值类型的效果,它就具有了<code>值语义</code>.但很明显这样做的代价是昂贵的,每个get都需要重新创建一个,或复制(深copy)一个,这种消耗是我们不希望存在的.这就需要用到写实复制技术</p>
+<p>由于上下部分其实是一个动画，所以只要实现了一个，另一个也就完成了。<br/>
+<img src="media/15367255656449/15367262925821.jpg" alt="" style="width:608px;"/></p>
 
-<h4 id="toc_2">什么是写时复制</h4>
+<p>假设粉色部分是沙漏的底部，灰色的是沙堆，那这个动画应该是灰色layer从粉色layer的底部移动到上部的过程，因为我们这个是不规则的图形，所以必须使用layer画出一个不规则的layer。其实我一开始的想法很简单，就是用两张图片，做位移，但实际的效果是：<br/>
+<img src="media/15367255656449/15367263814233.jpg" alt="" style="width:516px;"/></p>
 
-<p><font color=#5F9EA0 size=3 ></p>
+<p>向上的动画还好说，向下的话，沙堆下降的时候超出去的部分会展示出来，相信说到这大家也就明白了，这个不多解释了。至于背景色填充，遮罩这种的方案，就更不符合需求了，一个沙漏肯定是透明的，你加上底色，如果你这个页面的底色和你的这个底层一样还好，要不一样，那多难看。<br/>
+所以一定要用layer来做。</p>
 
-<blockquote>
-<p>打个比方,你在公司上班,老板说每天给你80块钱,你心里算了算,说行,那一小时就是10块钱,一分钟也就是0.16666667块钱,那老板你每分钟都给我这些钱吧.老板说你小子有病吧,你想累死财务吗(这就是一个无用的消耗)?这钱又飞不了,等你要用的时候(比如你每天下班要吃饭了)我在给你不就完了么,也不耽误你呀.你一想有道理,要不然我还得每天上班带个麻袋装钱,那好吧.这样一种约定就出现了.就是有用的时候在给你,平常只是记录一下<br/>
-</font><br/>
-简单来说这就是写实复制技术,只有需要改变得时候,才会对变量进行复制,如果不改变,大家都公用一个内存.在 Swift 标准库中，像是 <code>Array</code>，<code>Dictionary</code> 和 <code>Set</code> 这样的集合类型是通过写时复制 (copy-on-write) 的技术实现的(摘录来自: Chris Eidhof. “Swift 进阶”) .所以我们用数组<code>Array</code>举个🌰:<br/>
-<img src="media/15034498083541/15034549092312.jpg" alt=""/><br/>
-可以看到,尽管数组是值类型,但是在赋值操作之后,内存还是相同的,并没有真正的进行复制.我们改变一下y,在看看:<br/>
-<img src="media/15034498083541/15034552504215.jpg" alt=""/><br/>
-当y发生改变的时候,y拥有了新的内存地址,它发生了赋值.这就是写时复制技术,昂贵的复制操作只会发生下变量发生改变的时候.这样做后,我们可以保证,我们的数据既是安全的也是高效的.</p>
-
-<h4 id="toc_3">我们需要做什么</h4>
-
-<p>当你的结构体内部都是值类型的时候,写时复制是免费的,但是大部分情况,你的结构体中有一个或多个引用类型,这个时候,写时复制需要你自己来实现了.<br/>
-参考Swift进阶中,我们就用<code>NSMutableData</code>举例.<br/>
-<img src="media/15034498083541/15034560622792.jpg" alt="" style="width:522px;"/><br/>
-在MyData结构体中,data是私有的,我们通过dataForWriting这个计算属性来管理data,每当get操作的时候都会发生复制.并返回data.(在结构体中改变本身需要增加关键字mutating,有个这个关键字只有使用使用var声明的才可以调用).再扩展一个append方法,在调用的时候,dataForWriting会出发get方法,复制一份data,并对成员变量赋值,在对data进行更改.</p>
-</blockquote>
-
-<pre><code class="language-Swift">let theData = NSData(base64Encoded: &quot;rookieneo&quot;, options: [])!
-var x = MyData(theData)
-let y = x
-//x.data === y.data true
-x.append(x)
-//x.data === y.data false
-</code></pre>
-
-<p>这样一个基本的写时复制就实现了,在赋值操作的时候,不会发生复制,但是当对变量进行更改的时候,会发生复制.但是这样做,仍然是昂贵的.因为它会在一些不需要复制的时候发生复制,比如:</p>
-
-<pre><code class="language-Swift">let theData = NSData(base64Encoded: &quot;rookieneo&quot;, options: [])!
-var x = MyData(theData)
-for _ in 0..&lt;5{
-    x.append(x)    
+<pre><code class="language-Swift">class SandBoxBottomLayer: CALayer {
+    
+    let sublayer1 = CAShapeLayer()
+    
+    init(frame : CGRect) {
+        super.init()
+        self.frame = frame
+        self.configUI()
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: self.frame.width/2, y: 0))
+        path.addLine(to: CGPoint(x: self.frame.width, y: self.frame.height*1/3))
+        path.addLine(to: CGPoint(x: self.frame.width, y: self.frame.width))
+        path.addLine(to: CGPoint(x: 0, y: self.frame.height))
+        path.addLine(to: CGPoint(x: 0, y: self.frame.height*1/3))
+        path.addLine(to: CGPoint(x: self.frame.width/2, y: 0))
+        path.close()
+        let sublayer = CAShapeLayer()
+        sublayer.masksToBounds = true
+        sublayer.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+        sublayer.path = path.cgPath
+        //我觉得加背景色反而不是很好看呢
+//        self.backgroundColor = UIColor(red: 232/255.0, green: 159/255.0, blue: 159/255.0, alpha: 1).cgColor
+        self.mask = sublayer
+        
+        sublayer1.frame = CGRect(x: 0, y: self.frame.height, width: self.frame.width, height: self.frame.height)
+        sublayer1.path = path.cgPath
+        sublayer1.fillColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        
+        
+        self.addSublayer(sublayer1)
+    }
 }
 </code></pre>
 
-<p>很明显,x并没有共享内存,但是复制却一直在发生.这也是我们不希望的.</p>
+<p>这里用到了一个比较重要的属性就是CALayer的mask，mask其实也是一个CALayer，它就是整个Layer的可视部分，所以大家应该知道为什么View做圆角的时候需要开启masktobounds了。CAShapeLayer是CALayer的子类，它可以填充颜色，还有path这个属性，可以用贝塞尔曲线画出一个图形，创建一个CAShapeLayer然后设置它的path等于我们画好的沙堆的图形，最后在让CALayer的mask=CASHaperLayer，这样超出的部分就不会看到了。一个透明的不规则的CALayer就👌了。然后在用刚才的path同样的方式做一个沙堆layer，放在父layer的底部。<br/>
+下面就是动画了。</p>
 
-<h6 id="toc_4">高效方式</h6>
+<pre><code class="language-Swift">func startAnimation() {
+        sublayer1.removeAllAnimations()
+        let animation = CAKeyframeAnimation(keyPath: &quot;position&quot;)
+        animation.keyTimes = [NSNumber(value: 0.0),NSNumber(value: SandClockView.animationTimeWithOutRotate/SandClockView.animationTime),NSNumber(value: 1.0)]
+        animation.values = [CGPoint(x: self.frame.width/2, y: self.frame.height*1.5),CGPoint(x: self.frame.width/2, y: self.frame.height/2),CGPoint(x: self.frame.width/2, y: self.frame.height/2)]
+        animation.duration = SandClockView.animationTime
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.timingFunctions = [CAMediaTimingFunction(controlPoints: 0.8, 0, 1, 1)]
+        animation.fillMode = kCAFillModeForwards
+        sublayer1.add(animation, forKey: &quot;&quot;)
+    }
+</code></pre>
 
-<p>想要不发生上文的无效复制,我们需要知道一件事,就是data属性 是不是唯一引用,在Swift中,<code>isKnownUniquelyReferenced</code>函数(是函数不是方法~)可以来检测是否是唯一引用.但是OC的类这个函数是失效的.所以我们需要对OC的类做一层封装,并对结构体加以改造.<br/>
-<img src="media/15034498083541/15034575601593.jpg" alt="" style="width:615px;"/><br/>
-这样改造完成后,我们发现,在get方法中,判断一下引用就可以了,只有不唯一的时候才进行复制,这样是极好的😜.只不过那个Swift的泛型封装有点丑陋,不过在swift没有完全摆脱oc的情况下,在所难免.</p>
+<h5 id="toc_2">跑起来的效果是</h5>
 
-<pre><code class="language-Swift">var  empty = MyData(NSData())
-var emptyCopy = empty
-for _ in 0..&lt;5{
-    empty.append(theData)
+<p><img src="media/15367255656449/shdowClocktop.gif" alt="shdowClocktop"/></p>
+
+<p>这里就是一个关键帧动画，说白了就是一个分时间段控制动画进程的类，之所以用它是因为我们要和其他动画串联起来，从沙漏开始到全部漏完，然后沙漏旋转，这是一个完整的动画。时间是6.5秒，其中6秒是沙漏的动画，0.5秒是旋转的。所以大家看我的keytime和values的设置就明白什么意思了，在0-沙漏动画部分就把位移做完，剩下的时间位移不变。timingFunctions这个属性可以提供一个贝塞尔曲线控制动画的随着时间完成的速度，系统有几个预设好的 ，easeinout这种的。不过我们的设计师觉得那种效果不太满意，我就自己写了一个。简单说下这个属性。<br/>
+<img src="media/15367255656449/10.1.jpeg" alt="10.1"/></p>
+
+<p>CAMediaTimingFunction这个类的初始化方法是传两个点。没有这两个点的时候，动画是线性的，斜率固定。但是当我们加入两个控制点的时候。<br/>
+<img src="media/15367255656449/10.2.jpeg" alt="10.2"/><br/>
+斜率就发生变化了，根据斜率来开，动画的速度是先快后慢，在快的过程。<br/>
+我传的两个点是（0.8，0），（1，1）了，所以这个贝尔赛曲线的斜率一定是刚开始很慢，后来飙升这么一个过程。那动画也会这样，一开始不动，后来越来越快。我觉得设计师这么做很合理，这事一个loading图，先快后面的体验是很好的，相信大家都体验过加载网页时候那个loading条线快后慢的感觉吧。<br/>
+这个说完了那上部分的也一样就说完了。</p>
+
+<h4 id="toc_3">沙子动画</h4>
+
+<p>沙粒的动画在设计师给我的设计稿中已经给出了沙粒的个数，每个沙粒的开始下落的坐标和速度，所以这个相对好做。我把代码贴出来看下就好。</p>
+
+<pre><code class="language-Swift">class SandLayer: CALayer {
+    //第一组沙粒
+    let sand05Layer = CALayer()
+    let sand05Layer1 = CALayer()
+    //第二组沙粒
+    let sand03Layer = CALayer()
+    let sand03Layer1 = CALayer()
+    //第三组沙粒
+    let sand01Layer = CALayer()
+    let sand01Layer1 = CALayer()
+    init(frame: CGRect) {
+        super.init()
+        self.frame = frame
+        self.configUI()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        sand05Layer.frame = CGRect(x: 0, y: -3, width: 1, height: 1)
+        sand05Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand05Layer)
+        sand05Layer1.frame = CGRect(x: 1, y: -10, width: 1, height: 2)
+        sand05Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand05Layer1)
+        
+        sand03Layer.frame = CGRect(x: 0, y: -10, width: 1, height: 2)
+        sand03Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand03Layer)
+        sand03Layer1.frame = CGRect(x: 1, y: -3, width: 1, height: 1)
+        sand03Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand03Layer1)
+//
+        sand01Layer.frame = CGRect(x: 0, y: -3, width: 1, height: 1)
+        sand01Layer.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand01Layer)
+        sand01Layer1.frame = CGRect(x: 1, y: -10, width: 1, height: 2)
+        sand01Layer1.backgroundColor = UIColor(red: 206/255.0, green: 206/255.0, blue: 213/255.0, alpha: 1).cgColor
+        self.addSublayer(sand01Layer1)
+    }
+    func startAnimation() {
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime05, layer: sand05Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime05, layer: sand05Layer1)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime03, layer: sand03Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime03, layer: sand03Layer1)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime01, layer: sand01Layer)
+        self.addAnimation(withDuration: SandClockView.sandAnimationTime01, layer: sand01Layer1)
+    }
+    private func addAnimation(withDuration duration: CFTimeInterval,layer: CALayer){
+        layer.removeAllAnimations()
+        let animation = CABasicAnimation(keyPath: &quot;position&quot;)
+        animation.fromValue = layer.position
+        animation.toValue = CGPoint(x: layer.position.x, y: self.frame.height)
+        animation.duration = duration
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.valueFunction = CAValueFunction(name: kCAMediaTimingFunctionLinear)
+        animation.fillMode = kCAFillModeForwards
+        layer.add(animation, forKey: nil)
+    }
 }
 </code></pre>
 
-<p>现在再试一下刚才的循环,发现empty只复制了一次,也就是第一次,这样满足了我们的要求,在引用为1的时候不发生复制.到此写时复制的问题就已经解决了.不过在使用时它还有很多陷阱.</p>
+<p>6个沙粒的位移动画而已。<br/>
+<img src="media/15367255656449/shdowClocktop1.gif" alt="shdowClocktop1"/></p>
 
-<h4 id="toc_5">写时复制的陷阱</h4>
+<h4 id="toc_4">组合+旋转动画</h4>
 
-<p>让我们对比来看(伪代码).</p>
-
-<pre><code class="language-Swift">var array = [MyData()]
-array[0].append()//No copy
-</code></pre>
-
-<pre><code class="language-Swift">var dic = [&quot;rookie&quot;: MyData()]
-dic[&quot;rookie&quot;]?.append()//copy
-</code></pre>
-
-<p>这看起来很奇怪,都是标准库中的类型,但是表现出来的状态是不同的,在数组下用下标取值不会有多个引用,而字典就会有,看起来数组的表现是正确的,而字典是错误的,那在字典中,我们需要怎么做,让我们来看一下书中的解释.</p>
-
-<blockquote>
-<p>如果在你将一个写时复制的结构体放到字典中，又想要避免这种复制的话，你可以将值用类封装起来，这将为值赋予引用语义。</p>
-
-<p>当你在使用自己的结构体时，也需要将这一点牢记于心。比如，我们可以创建一个储存某个值的简单地容器类型，通过直接访问存储的属性，或者间接地使用下标，都可以访问到这个值。当我们直接访问它的时候，我们可以获取写时复制的优化，但是当我们用下标间接访问的时候，复制会发生：</p>
-</blockquote>
-
-<pre><code class="language-Swift">struct ContainerStruct&lt;A&gt; {
-var storage: A
-subscript(s: String) -&gt; A {
-get { return storage }
-set { storage = newValue }
+<pre><code class="language-Swift">class SandClockView: UIView {
+    static let animationTime = 6.5                  //沙漏滴完+旋转的时间
+    static let animationTimeWithOutRotate = 6.1     //沙漏滴完的时间
+    static let sandAnimationTime05 = 0.5            //沙子下坠时间 共3中
+    static let sandAnimationTime03 = 0.3
+    static let sandAnimationTime01 = 0.1
+    let boxWidth: CGFloat = 34
+    let boxHeight: CGFloat = 25
+    lazy var topLayer: SandBoxTopLayer = {
+        let layer = SandBoxTopLayer(frame: CGRect(x: 7, y: 3, width: boxWidth , height: boxHeight))
+        return layer
+    }()
+    lazy var bottomLayer: SandBoxBottomLayer = {
+        let layer = SandBoxBottomLayer(frame: CGRect(x: 7, y: self.frame.height/2-1, width: boxWidth, height: boxHeight))
+        return layer
+    }()
+    lazy var sandLayer: SandLayer = {
+        let layer = SandLayer(frame: CGRect(x: self.frame.width/2-1, y: self.frame.height/2, width: 2, height: 25))
+        return layer
+    }()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.configUI()
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError(&quot;init(coder:) has not been implemented&quot;)
+    }
+    private func configUI() {
+        self.layer.addSublayer(bottomLayer)
+        self.layer.addSublayer(sandLayer)
+        self.layer.addSublayer(topLayer)
+        let imageView = UIImageView(image: UIImage(named: &quot;sandclock_bg&quot;))
+        imageView.frame = self.bounds
+        self.addSubview(imageView)
+    }
+    
 }
-}
-var d = ContainerStruct(storage: COWStruct())
-d.storage.change() // No copy
-d[&quot;test&quot;].change() // Copy”
-摘录来自: Chris Eidhof. “Swift 进阶”。 iBooks. 
 </code></pre>
 
-<p>居然还需要再用引用类型封装起来,这会让使用者疯掉的,这也是Swift未来的改进方向之一,Swift团队希望字典也表现出和Array一样的效果.之所以数组中是对的,是因为Array是通过地址器(addressors)的方式实现的下标的,地址器会直接访问内存,而不是复制.当然你也可以再自己的代码里实现地址器<a href="https://github.com/apple/swift/blob/73841a643c087e854a2f62c7e073317bd43af310/docs/proposals/Accessors.rst">-传送门-</a></p>
+<p>在一个View上把这些动画组合上,在加上一个沙漏的背景框，就可以开始动画了，如果你不喜欢用UIImageView的话这个沙漏自己用贝塞尔曲线画出来也不难。</p>
 
-<h2 id="toc_6">总结</h2>
+<pre><code class="language-Swift">func startAnimation(){
+        topLayer.startAnimation()
+        bottomLayer.startAnimation()
+        sandLayer.startAnimation()
+        self.layer.removeAllAnimations()
+        let animation = CAKeyframeAnimation(keyPath: &quot;transform.rotation.z&quot;)
+        animation.keyTimes = [NSNumber(value: 0.0),NSNumber(value: SandClockView.animationTimeWithOutRotate/SandClockView.animationTime),NSNumber(value:0.97),NSNumber(value: 1.0)]
+        animation.values = [0,0,Double.pi+0.07,Double.pi]
+        animation.duration = SandClockView.animationTime
+        animation.isRemovedOnCompletion = true
+        animation.repeatCount = MAXFLOAT
+        animation.timingFunctions = [CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut),
+                                     CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)]
+        animation.fillMode = kCAFillModeForwards
+        self.layer.add(animation, forKey: &quot;&quot;)
+    }
+</code></pre>
 
-<p><font color=#5F9EA0 size=4 ></p>
+<p>开始动画中调用所有组件化的动画开始，并且加上当前View旋转动画。同样时间要配合上。<br/>
+我这个旋转动画本来享用springanimation来做，但是没找到自身旋转的API，所以只能先用这种方式来实现了。不过效果也还不错，gif可能看着有点卡，实际的效果好很多。每个动画但看起来都很简单，很也很难看，但是组合起来，效果就很不错了。<br/>
+<img src="media/15367255656449/shdowClocktopB.gif" alt="shdowClocktopB"/><br/>
+这是最终的效果。对比了一下和设计师给我的效果可以达到95%相似，有些地方的曲线，加速度，时间，他是直接用的fackbook的那套的准则的，给不出我具体的数值，所以还是有些偏差。不过他觉得已经可以接受了。但是达到100%才是我们程序员应该努力的方向。</p>
 
-<blockquote>
-<p>在单向数据流方案非常流行的今天,结构体在Swift中的特性,对单项数据流有着很好的支持,包括reSwift等一些框架都已经有了一席之地,相对于双向数据流,它是安全,可控的,代码也是相对清晰的,所以写时复制的技术也就显得尤为重要,弥补了值类型性能的不足.以后在日常的开发中可以小规模的试用.😜<br/>
-</font></p>
-</blockquote>
+<h4 id="toc_5">总结</h4>
+
+<p>这次算是对以前用的动画的一次复习，基本把很多动画都用了一遍。从无从下手到完成其实也就是一天半的时间。所以这种把大问题拆分成小问题，追个解决的思想还是很好用的。<br/>
+最后 源码地址 <a href="https://github.com/RookieNeo/NeoSandClock">https://github.com/RookieNeo/NeoSandClock</a><br/>
+支持Pod</p>
+
+<p>参考资料：<br/>
+<a href="https://zsisme.gitbooks.io/ios-/content/chapter10/custom-easing-functions.html">iOS核心动画</a></p>
 
 
 		</div>

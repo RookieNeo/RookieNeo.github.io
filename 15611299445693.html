@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Swift - RookieNeo
+  学习SwiftUI两周之后 - RookieNeo
   
   </title>
  <meta name="description" content="学而不思则罔,思而不学则殆">
@@ -131,140 +131,90 @@
             </div>
             <div class="large-9 medium-9 columns">
 
- 
+ <div class="markdown-body">
+<h1>学习SwiftUI两周之后</h1>
+
+<p>苹果公司推出SwiftUI已经有小半个月了,当然我也学了有10来天了,一是我真的想学,了解过Web端的童鞋都知道在开发体验上,iOS端差了多少...二是公司的App想用SwiftUI重写,我作为先头部队,就这么出发了.</p>
+
+<h3 id="toc_0">关于Swift</h3>
+
+<p>我是从Swift2开始学习的,其实当时学也没啥太大感受,作为一个还没毕业的实习生,我懂得太少,Swift的好处,缺点我也都看不到.现在Swift已经到5.1了,这么多年走下来,以为个人的感受来说,我学过Java,JS,Python,Go,React...各种语言,框架,但我还是觉得Swift最好(个人观点),虽然说一年学一次新语言有点过分了,但是Swift发展的速度真是肉眼可见,一门新的语言,不稳定,各方面支持都不是很好,这是很正常的,但是我庆幸我能和Swift一起生长,我想如果我现在还在用OC,那我可能有很多思想,框架,思维方式,都不会去了解,也不想去了解.但是Swift很年轻,开源之后社区也很活跃,我每天在其中学习,开阔了我的眼界,让我时刻走在技术发展的前沿,带给我的不仅仅是学了一门语言这么简单.<br/>
+也正是因为开阔了我的眼界,我才知道了<code>Redux</code>,才知道了前端的开发方式,知道了移动端开发是多么的落后,已经完全跟不上Web的节奏了.正当我要忍无可忍,被MVC这种松散的架构,被Xib,Nib,被时刻要保持数据和UI之间统一的coding方式逼疯的时候,SwiftUI横空出世,我看到它的第一眼,心里是感动,真的,有一种苹果原来还记得我们,一群无助的开发者,一群羡慕前端的却无处诉苦的开发者.让苹果的开发者也可以像Web开发一样,hot reload,声明式的Coding UI的方式,<code>Combine</code>框架带来新的DataFlow,甚至超越了Web的开发体验.所以第二天晚上,我就更新Mac,更新Xcode,学了起来.</p>
+
+<h3 id="toc_1">SwiftUI的优点</h3>
+
+<p>学了差不多有两周的<code>SwiftUI</code>,优点还是很多的<br/>
+首先,在也不用时刻考虑保持数据和UI的如何同步了,以前,如果一个页面的一个<code>Switch</code>,会<code>hidden</code>一个<code>view</code>,但我们只能添加一个<code>property</code>,在其<code>didset</code>中设置<code>View.isHidden</code>属性,可想而知当页面复杂之后,它是有多么难管理,牵一发动全身,每多出一个UI的State,你都要考虑是否会影响到其它的控件,相信所有的iOS开发都深有体会,90%以上的Bug也都是这么来的.现在在SwiftUI中,我们有了<code>@State</code>,<code>@Binding</code>,<code>@ObjectBinding</code>,<code>@BindableObject</code>,<code>@Environment</code>之后,当一个属性改变之后,与其相关的UI将自动<code>reload</code>,这体验简直不要太爽.<br/>
+HotReload也是对生产力的重大提升,以往,在发开中,如果想调试某个页面,就必须运行模拟器,如果这个页面很深,再加上项目大了之后,每一次编译都是30s以上,也就意味着你可能就为了调试一个属性,画了1s改了一行代码,但是为了验证这件事,却花了1min,这是多么低的效率,但有了hot reload之后,每次修改之后,Xcode Preview 会自动刷新页面(在不增加property的情况),<code>common + option + p</code> 是我现在最喜欢的快捷键.<br/>
+声明式的UI是一种和以往开发完全不同的方式,现在的UI开发起来就像是说话一样,我需要一个列表,列表里面有10行,每一个里都有什么数据,说完了,也就写完了.当然这种新的思维方式需要时间去感受,去理解.<br/>
+Combine作为一个响应式的框架,能带来的不仅仅是UI上的便利,以后它会深入到iOS开发的每个细节,网络,本地化,缓存等各个方面.</p>
+
+<h3 id="toc_2">使用感受</h3>
+
+<p>在学了2周之后,现在给我的感觉就是它并达不到一个能够做出生产级别产品的能力,如果不依靠UIKit,那它能做的事还是很有限,如果按照WWDC上的那套苹果为我们封装好的UI还写,那还是很方便的,但是相信每一家公司都会对自己的产品有自己的理解,这会完完全全的展现在产品的设计上,这就需要工程师做大量的自定义View,在这方面,现在的SwiftUI还很弱,当然,它还小,需要生长.<br/>
+还有一个方面就是代码的联想速度,应该已经不能用速度来形容了,压根儿就联想不出来.Swift的老毛病,也体现在了Swift UI上了,这一点真的很不爽,因为本来对新的API就不熟悉的情况下,很多东西都需要试出来,但现在试都没法试,而且SwiftUI的API不像是UIKit,你可以在一个控件的class中看到它的属性,现在所有的设置都是用的一个叫modify的东西去做,也就是说你在查看API的时候也不会看到有什么属性,这也导致了我的进度很慢,有时候心态会不太好.<br/>
+但我相信这只是暂时的,在9月份正式发布之前,苹果一定会将它做的更加完善.</p>
+
+<h3 id="toc_3">总结</h3>
+
+<p>不管怎么说,SwiftUI一定代表着未来苹果的发展方向,其实这也是整个前端的方向,我们必须承认它是好的,SwiftUI已经足够惊艳,我也会继续去学习它,早日把项目替换为SwiftUI+Combine架构的.</p>
 
 
-	
-		<div class="markdown-body">
-		<h1>Whats-new-in-swift-4 (上)</h1>
+</div>
 
-		<p>Swift4终于到4了,这次升级对之前的版本有很好的兼容,而且也有一些很不错的API<br/>
-于是我是看了 Ole Begemann这位外国友人的github的Swift4的playground<a href="https://github.com/ole/whats-new-in-swift-4">传送门</a>总结了一下,这种东西,还是老外搞得好,国内真的不行...</p>
+<br /><br />
+<hr />
 
-<h4 id="toc_0">Strings</h4>
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
+		
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
+		
+	        <a href="15476925512340.html" 
+	        title="Next Post: 2018总结">2018总结 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
 
-<ol>
-<li>第一个就是String,增加了<code>&quot;&quot;&quot;</code>这个功能
-栗子:</li>
-</ol>
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
+<div id="disqus_thread"></div>
+<script>
 
-<pre><code class="language-swift">let multilineString = &quot;&quot;&quot;
-        This is a multi-line string.
-    You don&#39;t have to escape &quot;quotes&quot; in here.
-    The position of the closing delimiter
-      controls whitespace stripping
-    &quot;&quot;&quot;
-print(multilineString)
-</code></pre>
-
-<p>打印出来的效果是这个样子的<br/>
-<img src="media/14969065461458/14969075270793.jpg" alt=""/><br/>
-没错,就是和你在代码里写的空行一模一样,不需要打换行符和空格了,不知道大家觉得如何,我是觉得非常好,因为...<br/>
-<img src="media/14969065461458/14969077073633.jpg" alt=""/><br/>
-我只是为了让网络请求的打印的日志好看一点,把代码写成这样也是很蓝瘦的,不过现在有&quot;&quot;&quot;就好了<br/>
-2. String终于有.count了 不容易,而且取subString什么的更容易了,我自己项目里的String的extension终于可以去掉了,人家写的确实比我好,嘿嘿</p>
-
-<pre><code class="language-swift">let greeting = &quot;Hello, 😜!&quot;
-let comma = greeting.index(of: &quot;,&quot;)!
-let substring = greeting[..&lt;comma]
-//print Hello
-</code></pre>
-
-<h4 id="toc_1">SubScripts</h4>
-
-<p>1.<br/>
-这个不用说,秒懂,感觉还好,以前用着也不费劲</p>
-
-<pre><code class="language-swift">let numbers = [1,2,3,4,5,6,7,8,9,10]
-numbers[5...] // instead of numbers[5..&lt;numbers.endIndex]
-//print Hello
-</code></pre>
-
-<h4 id="toc_2">Private declarations visible in same-file extensions</h4>
-
-<p>同一个文件下的Extensions中用到的Private属性可以不用改为filePrivate了,这个改动很好,因为同一个文件下的类的扩展,本身就同一个类,为什么我在类的方法中调用自己的属性,还需要用fileprivate,就很奇怪,当初我用的时候就感觉很难受,一使用extension就需要改权限...<br/>
-<img src="media/14969065461458/14969090403987.jpg" alt=""/><br/>
-如果在swift3中,stroage这个属性是要改成fileprivate的.</p>
-
-<h4 id="toc_3">Key Paths</h4>
-
-<p><img src="media/14969065461458/14969097853215.jpg" alt="" style="width:1860px;"/></p>
-
-<pre><code class="language-swift">sicp[keyPath: \Book.title]
-sicp.title
-//print same Structure and Interpretation of Computer Programs
-sicp[keyPath: \Book.title]
-sicp[keyPath: \Book.primaryAuthor.name]
-//print Harold Abelson
-</code></pre>
-
-<p>结构体中的属性可以像路径一样被取出<br/>
-当然也可以拼接路径 就像这样</p>
-
-<pre><code class="language-Swfit">let authorKeyPath = \Book.primaryAuthor
-type(of: authorKeyPath)
-let nameKeyPath = authorKeyPath.appending(path: \.name) // you can omit the type name if the compiler can infer it
-sicp[keyPath: nameKeyPath]
-//print  Harold Abelson
-</code></pre>
-
-<p>虽然我现在也不是太理解这样好处,但是能感觉出来这个一个很重大的改进,很多大神都可能会在这做文章,期待.</p>
-
-<h4 id="toc_4">Encoding and decoding 重头戏</h4>
-
-<p>这个是已经被公认的一个重大的提升,先举栗子</p>
-
-<p><img src="media/14969065461458/14969104547178.jpg" alt=""/><br/>
-这是一个结构体,有一点特殊,它遵循了Codable协议,hand数组中初始化了两个Card.<br/>
-然后~<br/>
-Encoding</p>
-
-<pre><code class="language-Swfit">var encoder = JSONEncoder()
-
-// Properties offered by JSONEncoder to customize output
-encoder.dataEncodingStrategy
-encoder.dateEncodingStrategy
-encoder.nonConformingFloatEncodingStrategy
-encoder.outputFormatting
-encoder.userInfo
-
-let jsonData = try encoder.encode(hand)
-String(data: jsonData, encoding: .utf8)
-//print &quot;[{\&quot;rank\&quot;:1,\&quot;suit\&quot;:\&quot;clubs\&quot;},{\&quot;rank\&quot;:12,\&quot;suit\&quot;:\&quot;hearts\&quot;}]&quot;
-//你没有看错  它是JSON了
-</code></pre>
-
-<p>Decoding</p>
-
-<pre><code class="language-Swift">let decoder = JSONDecoder()
-let decoded = try decoder.decode([Card].self, from: jsonData)
-// decoder 现在和截图中hand是一模一样的了666
-</code></pre>
-
-<p>系统的API帮我们做了json解析,这是非常好的.<br/>
-结构体是值类型,适用于单向数据流的数据传输方式,不过移动端的数据流一般都是双向的,意思就是你引用了别人的model,你把model中的数据给改了,那别人的model对应的数据也改了,因为大家的model用的都是类,而不是结构体,是引用类型,这样做在移动端是很方便的,但是也有很多弊端,比如你改了别人的数据,但是那哥们却不知道,这是很危险的,如果项目比较大,这老哥就为了知道是谁改了他数据就能找半天,但是结构体是值类型,就不会有这个问题,因为每次赋值,都是一个新的,这样就很安全,但是你每次改数据都需要调用别人的接口,这样就会很繁琐,而且数据的一致性和保持不了,在web前端有流行的框架中,react,vue(排名不分先后)都是单向数据,但是他们也有双向绑定的机制,也有很好的框架保证数据的准确.移动端这样的框架也有,只不过没有流行起来<br/>
-所以我就测试了一下类是不是也可以这样搞,结果是可以,皆大欢喜,引用类型也可以遵循Codable协议,来实现和JSON数据的互转.</p>
-
-<h4 id="toc_5">Generic subscripts 角标方法中可以使用泛型了</h4>
-
-<p>这是一个很好的消息,这会使得subscripts的使用变得更广泛,更已用,我在之前封装的UserDefaults方法中就因为角标方法中不能使用泛型限制了我的思路,现在终于可以实现了. </p>
-
-<pre><code class="language-Swift">subscript&lt;T&gt;(key: String) -&gt; T? {
-        return storage[key] as? T
-    }
-</code></pre>
-
-<p>相信用过subscipt方法的看到这个栗子会很激动,没用过的,也感受不到Swift3中不能使用泛型的困扰了</p>
-
-
-		</div>
-	
-
- 
-	
-
-  
-  
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://rookieneo.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '15611299445693.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
 </div></div>
 
 
