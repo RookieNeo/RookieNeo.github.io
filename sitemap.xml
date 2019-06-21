@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
   <loc>https://rookieneo.github.io/</loc>
-  <lastmod>2019-06-22T00:16:28+08:00</lastmod>
+  <lastmod>2019-06-22T00:20:41+08:00</lastmod>
 </url>
 
 <url>
@@ -79,6 +79,10 @@
 
 <url>
   <loc>https://rookieneo.github.io/Swift.html</loc>
+</url>
+
+<url>
+  <loc>https://rookieneo.github.io/Summary.html</loc>
 </url>
 
 
