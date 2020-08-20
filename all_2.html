@@ -47,6 +47,8 @@
         <li><label>Swift</label></li>
 
           
+            <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+          
             <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
           
             <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
@@ -100,6 +102,8 @@
                     
                       <li class="side-title"><span>Swift</span></li>
                         
+                          <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+                        
                           <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
                         
                           <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
@@ -146,271 +150,139 @@
 
 	
 		<div class="markdown-body">
-		<h1>灵活扩展的下拉刷新控件的封装</h1>
+		<h1>关于HTTPS的探究</h1>
 
-		<p><img src="media/15113233292599/refresh_arrow@2x%2014-38-10-573.png" alt="refresh_arrow@2x 14-38-10-573"/><br/>
-<font color=#586E75 size=3 ><br/>
-最近开始做新项目,需要在Swift项目中使用下拉刷新控件,之前的项目有用过一起其他的三方库,比如MJRefresh,CRRefresh,但是MJ是OC的,总是感觉一个纯Swift项目用OC的不太爽,CR的库没有升级到Swift4,由于是新项目,直接上的Swift4,也不能用,所以就打算自己封装一个.</p>
+		<p>最近公司从https的认证下来了,所以大家就都开始大张旗鼓的切换成https<del>其实就是http后面加一个s</del>,都说https安全,但是到底为什么安全,怎么做到了安全,我一直都模棱两可的,让我感觉很难受.所以还是想认真学习一下.<br/>
+还是老规矩,先从表象入手(在iOS中的实现),在分析内部(https到底是什么)非iOSCoder直接跳过第一节</p>
 
-<p>其实下拉刷新这种常用的控件Github上有很多都封装的不错,但是在我看来,他们都太重了,大部分功能都是我不需要的,至少现在不需要,所以我打算封装一个简单灵活的(适应现在的需求就可以),易扩展的(未来有新的需求也可以很好的实现).</p>
+<h3 id="toc_0">1  iOS中https的使用</h3>
 
-<p>这篇文章我会先从实现功能的角度实现一个耦合性很强的刷新控件,然后一步步的优化,去依赖,最后形成一个使用起来很方便的下拉刷新控件,最后提出当初我设计的时候的一些疑问,和一些优缺点作为自己以后的思考或和大家一起沟通.</p>
+<h5 id="toc_1">非自签证书,也就是从CA机构颁发的(花了银子的)</h5>
 
-<h4 id="toc_0">一个简单的下拉刷新View</h4>
+<p>手机系统或是浏览器中已经存储了CA机构的根证书,所以URLSession中已经对非自签证书做了处理,我们要做的就是在http后面+s it&#39;s work! 至于这个验证机制咱们放到后面说,一点点来~</p>
 
-<p>这是一个UI控件,所以首先我就创建了一个View.并把它添加到一个SrollView上.</p>
+<h5 id="toc_2">自签名证书的验证.有两种方式,使用Alamofire开源网络框架和自己写,但是表现在代码上都不复杂,咱们通过Alamofire的源码来看一下具体的实现方式.(手写其实就是把它的实现<del>粘贴</del>出来,所以我们只讲一下Alamofire就行)</h5>
 
-<pre><code class="language-Swift">extension UIScrollView {
-    var neoRefreshHeader: RefreshView{
-        get{
-            let view = Bundle.main.loadNibNamed(&quot;RefreshView&quot;, owner: self, options: nil)?.last as! RefreshView
-            self.addSubview(view)
-            view.snp.makeConstraints { (make) in
-                make.left.right.equalTo(self)
-                make.bottom.equalTo(self.snp.top)
-                make.height.equalTo(60)
-            }
-            return view
-        }
-    }
-}
+<p><img src="media/15221395300202/15222174824879.jpg" alt="" style="width:975px;"/><br/>
+这是Alamofire关于https验证的具体实现.Alamofire是对URLSession的封装,所以它一定要实现URLSession的代理方法,这个代理就是URLSession做自签名证书验证的地方.注释中<code>Requests credentials from the delegate in response to a session-level authentication request from the remote server.</code>在代理中请求凭证,响应远程服务器的会话层验证,这英文虽然翻译不太明白,但大体的意思就是这里做验证.继续~<font color=#ff6ec7><code>sessionDidReceiveChallengeWithCompletion</code>,<code>sessionDidReceiveChallenge</code></font>这两个闭包暂时不看,它的作用是如果你使用了Alamofire,你还想自定义验证,那你就实现这两个闭包中的一个.就不会走默认的验证方式.但实际当你看会了下面的默认验证方式也就知道怎么去自定义验证了.<br/>
+从274行开始,<font color=#ff6ec7><code>if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust</code></font>,首先challenge的类型是<code>URLAuthenticationChallenge</code>,其中protectionSpace这个属性很重要,它是一个服务器受保护空间的一个具体的描述<br/>
+<img src="media/15221395300202/15222189824345.jpg" alt="" style="width:795px;"/><br/>
+我们要验证就需要这里面的信息.</p>
+
+<pre><code class="language-Swift">open var realm: String? { get }
+open var host: String { get }
+open var port: Int { get }
+open var proxyType: String? { get }
+open var `protocol`: String? { get }
+open var authenticationMethod: String { get }
+open var serverTrust: SecTrust? { get }
 </code></pre>
 
-<p>这时候当你的scrollView调用<code>neoRefreshHeader</code>的时候,view就添加到ScrollView上,下拉的时候就能看到了.但现在这个View是一个纯展示的静态的,我们的需求就是要在用户不同的操作下,我们有响应,并且能向业务层回调(进行网络请求等耗时操作).这时候我们就需要做一个总结,总结仅对这个功能来说,用户会有哪些操作,然后对这些操作,做一个抽象,把他的操作,抽象为数据的表现形态.</p>
+<p>其中<code>authenticationMethod</code>是一个字符串,用它来分辨什么方式来验证.<del>不用枚举,我只能说apple也懒得改了</del>方式有很多,我们主要用NSURLAuthenticationMethodClientCertificate,验证客户端.NSURLAuthenticationMethodServerTrust,验证服务器.所以Alamofire中先是判断是不是验证服务器.如果是的.那么<code>let serverTrustPolicy = session.serverTrustPolicyManager?.serverTrustPolicy(forHost: host)</code><br/>
+<img src="media/15221395300202/15222196018465.jpg" alt="" style="width:1008px;"/><br/>
+作者用runtime的方式动态的给URLSession增加了一下属性来管理ServerTrustPolicy(安全策略)<code>objc_getAssociatedObject</code>在各种开源库中都有使用.因为在开发时我们可能要对应不同的服务器,那不同的服务器肯定有不同的安全策略,所以manger的作用就是我们访问不同的host的时候 找到对应的策略进行验证.</p>
+
+<p>ServerTrustPolicy这个枚举也是作者创建的,这里才是验证的核心,这个枚举的名字也很合理,验证服务器的策略.在这里作者充分利用了Swift的语言特性(这部分的实现在OC中有很大不同)-枚举关联对象<br/>
+<img src="media/15221395300202/15222957905304.jpg" alt="" style="width:837px;"/><br/>
+对应着5中种不同的验证方式<br/>
+1. Default 默认的策略,合法证书通过验证<br/>
+2. Revoked 对注销证书做的一种额外设置<br/>
+3. pinCertificates 验证指定的证书(是否验证证书链)<br/>
+4. pinPublicKeys 这个更上边的那个差不多<br/>
+5. disableEvaluation 该选项下，验证一直都是通过的，也就是说无条件信任<br/>
+6. customEvaluation 自定义验证，需要返回一个布尔类型的结果<br/>
+<code>ServerTrustPolicy</code>和<code>serverTrustPolicyManager</code>介绍完了,<code>serverTrustPolicyManager</code>是可选的,需要我们在初始换Session的时候赋值.<br/>
+<img src="media/15221395300202/15223166303303.jpg" alt="" style="width:703px;"/><br/>
+在外层初始化sessionManager的时候对manager赋值.这样在URLSession回调的时候,就可以根据不通的host取出不用的验证策略.<br/>
+呼~ 没想到这一行代码说了这么多.继续下一行<br/>
+<code>let serverTrust = challenge.protectionSpace.serverTrust</code><br/>
+上面说过这个challenge,我们来看一下这个serverTrust<br/>
+<img src="media/15221395300202/15223179147432.jpg" alt="" style="width:685px;"/><br/>
+它实际类型是SecTrustRef,那这个类型到底是干嘛的呢?<a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services/trust/creating_a_trust_object">Apple关于SecTrust的文档</a>,简单来说他就是对服务器传递给我们的证书和验证策略的一个封装.(Construct a trust object from a certificate and a policy.)我们需要的哪些服务器的信息,都得从这里获取.<br/>
+最后终于到了最关键的一步了<code>serverTrustPolicy.evaluate(serverTrust, forHost: host)</code>这里才是真正做证书验证的地方<code>serverTrustPolicy</code>就是那个枚举类型.<br/>
+<img src="media/15221395300202/15232557248912.jpg" alt="" style="width:993px;"/><br/>
+我们主要就说.pinCertificates的类型,理解了一个,其他的就都理解了.此枚举关联了3个参数,一个证书集合,是否验证证书链,是否验证host.<br/>
+<code>let policy = SecPolicyCreateSSL(true, validateHost ? host as CFString : nil)</code><br/>
+返回一个验证证书链策略的对象.<br/>
+<code>SecTrustSetPolicies(serverTrust, policy)</code><br/>
+(Set the policies for which trust should be verified)<br/>
+<code>SecTrustSetAnchorCertificates(serverTrust, pinnedCertificates as CFArray)</code><br/>
+(Sets the anchor certificates for a given trust.)<br/>
+<code>SecTrustSetAnchorCertificatesOnly(serverTrust, true)</code><br/>
+(Reenables trusting anchor certificates in addition to those passed in via the SecTrustSetAnchorCertificates API.)<br/>
+API 素质4连儿 这些都是做准备工作,不用的验证方式需要做不同的准备<br/>
+<img src="media/15221395300202/15232608818834.jpg" alt="" style="width:523px;"/><br/>
+这里是最终评估证书的地方.这样一个完整的单向验证就完成了.这里面一连调用了N个API,具体的实现其实我也不知道(我也查阅了文档,由于英文能力有限,所以我就不瞎说了,大家如果有兴趣可以自己查阅一下),但是如果我们理解Https的原理,那也就知道这些API内部在做什么了.(知道了Alamofire的实现,自定义实现相信大家也就会了)</p>
+
+<h3 id="toc_3">2 HTTPS的原理</h3>
+
+<h4 id="toc_4">HTTPS的组成</h4>
+
+<p>HTTPS = HTTP + SSL<br/>
+HTTP这个就不说了(不在本文讨论范围之内).<br/>
+SSL是在传输层上为网络通信提供数据安全和数据完整性的一种安全协议.<br/>
+那问题来了: 为什么协议?<br/>
+其实它之所以叫协议就是因为它和我们现实世界中的协议是一样的.它就是对某些事的一种规定,一种规范.你想玩游戏,你女朋友不让你玩,后来你俩达成一个协议,你给她买一个包,她就让你玩一天.就酱.那你想要你的网络传输的安全的,你就按SSL的协议规则做,我说一你就一 我说二 你就二 就完了.<br/>
+我们都知道HTTP协议是明文的,也就意味着你传输的数据,谁都可以看到,谁都可以修改,这很不安全.<br/>
+于是大家就想用加密算法,把发送的数据加密,等接受到后再用秘钥解析数据,这样就安全了.但这样做有一个问题,就是这个秘钥怎么让对方知道.因为我们用的是对称加密.所以加密和解密用的都是同一个秘钥.现在有两种方案,第一种通过网络传输给对方,但是这样做,人家就又可以截获到你的网络请求,然后就知道你的秘钥了.第二种,你腿儿过去,奔走相告~,这老哥要是离你近点还可以接受,他要是在大洋彼岸这事可就费劲了.所以这个方案不行了.<br/>
+下一个方案,RSA非对称加密.这里需要展开一下</p>
+
+<h4 id="toc_5">RSA加密算法</h4>
+
+<p>这里面涉及到了很多数学和密码学的知识,其实很多我也一知半解的,我只能简单说一下.具体点的<a href="http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html">看这里</a>阮一峰的博客.我觉得说的还可以<br/>
+首先我们我们要知道一个概念叫质数~这个东西很神器,它有很多应用,其中一个就是密码学.<br/>
+质数定义为在大于1的自然数中，除了1和它本身以外不再有其他因数。<br/>
+互质关系:<br/>
+如果两个正整数，除了1以外，没有其他公因子，我们就称这两个数是互质关系.<br/>
+比如 7和9就是互质关系.<br/>
+加密算法就是利用的这一点,我们随便说两个质数,很容易,但是我给出乘积比如<del>3060</del>3111(之前这写错了,丢人了),让你找出它是哪两个质数的乘积,这事可就不简单了.实际它是51*61,那么大家可能想让计算机暴力破解会不会成为可能.人类已知破解的RSA秘钥的最大长度是768位,看起来很厉害,但实际上,我们的秘钥长度最少也是1024位的.<br/>
+<img src="media/15221395300202/15232704785589.jpg" alt="" style="width:465px;"/><br/>
+这是我在mac钥匙串上随便截的一个证书,他的秘钥长度是2048位,所以想破解这个秘钥,在咱们现有计算机的体系下,是不可能的.但是如果哪天量子计算机量产了,那迄今为止所有的加密方案都将作废.所以安全这种事是没有绝对的,所谓的绝对安全也只是在一个标准化的体系下.</p>
+
+<h4 id="toc_6">非对称加密</h4>
+
+<p>好了我们知道了RSA加密算法,我们在来看看非对称加密,所谓非对称加密就是加密的秘钥和解密的秘钥是两个完全不同的秘钥,成为公钥私钥,私钥加密的数据,用公钥才可以解开,用公钥加密的数据,用私钥才可以解开.这样咱们刚才的问题就解决了.我自己保存私钥,把公钥张贴出去,全世界谁都可以看到.你们想和我说悄悄话,那就把想说的话用公钥加密好,发过来,劫持的人没有私钥,他拿到的数据也没有任何意义.这样做看起来是完美了,但其实不是这样的.原因就是非对称方案的加密解密很慢的.这样的开销在追求更快更高更强的今天,显然是不行的.<br/>
+所以又有人想出的新的方案.</p>
+
+<h4 id="toc_7">非对称加密传输对称秘钥</h4>
+
+<p>也就是说A和B之间传输数据,A先用公钥把一个对称秘钥DC-Key加密,然后传给B,B拿到后用私钥解析出DC-Key,然后他们用这个DC-Key加密数据,这样只有第一次的时候慢以后的效率是很快的.<br/>
+<img src="media/15221395300202/15232718339085.jpg" alt="" style="width:797px;"/><br/>
+这样问题终于解决了吧~但实际并没有,因为实际操作时大部分情况,Client的公钥都是从Server请求来的,这就存在一种可能,就是第一次请求公钥的时候被中间人截获了.<br/>
+<img src="media/15221395300202/15232725491545.jpg" alt="" style="width:837px;"/><br/>
+这样,这个中间人可以做任何事情.这显然是又不安全了<br/>
+但是我们可以分析问题,问题主要出在了公钥的合法性上,谁能证明你的公钥就是我想访问那个server的公钥呢?<br/>
+大家可以想一下自己的毕业证书,通过这个,就可以鉴定你是不是XXX大学的毕业生.但是这需要一个权威机构,就是一个有公信力的,大家都相信的机构.如果你去某公司应聘,用人单位怀疑你的学历,他可以要求你提供毕业证书,他去有公信力的机构调查一下.判断你的学历.那我们也可以效仿.生成数字签名</p>
+
+<h4 id="toc_8">数字签名</h4>
+
+<p>首先要有一家有公信力的机构,也就是我们常说的CA机构.他自己一对公钥私钥.当有人来申请,说我想要安全的网络传输的证书.那么CA机构会给(就比如&quot;我的&quot;公司吧)生成一套公钥私钥,这个是属于我的公司.同时呢还要给我的公司一个证书,这个证书中我把它分成三部分组成,这样好理解一点:我的公司的公钥,和一些重要信息(其中有版本号,序列号,有效日期,使用者,颁发者标识,等等一堆东西),还有最重要的一个就是数字签名,这个数字签名是将我的公司的公钥和重要信息先用Hash算法生成一个摘要(用hash算法是为了保证只要数据被篡改了一点点,那么生成的摘要的变化就翻天覆地,防止中间人猜测出规则来),然后用CA机构的私钥!注意是CA机构的私钥对这个摘要进行加密,形成了数字签名.(Https的证书都是遵循X.509标准的,该标准规定了证书的数据结构)</p>
+
+<p><img src="media/15221395300202/15233315021299.jpg" alt="" style="width:505px;"/>这就是一个数字证书的结构.当从服务器拿到证书的时候,用同样的Hash算法解出摘要,然后用CA的公钥去解密,把得到的数据和证书里原来的信息就对比,就知道了是不是被篡改了.也就知道了这是我自己的服务器,而不是中间人的.因为中间人不知道CA的私钥,他也伪造不出来CA公钥能解析的证书.如果他想劫持到客户端用服务器的公钥加密的对称秘钥,但是他没有私钥,拿到加密后的数据,也没有意义.所以现在来看这种策略是安全的了.可能有童鞋会问.那CA的公钥又是咋来的?难道要再来一个证书?无限循环?事实上现在的操作系统和浏览器中已经内置了一些顶层的根证书,顶层的根证书!顶层的根证书!点击mac的钥匙串可以查看.也就是说只有这些机构颁发的证书才是可信的,有公信力的.(这些机构挣钱简直不要太简单...)事实上.我们的Https证书一般都是二级代理的.也就是说顶层的机构干活忙不过来了,就产生了二级机构,他们也可以颁发证书.所以有一种验证方式是证书链验证,上面iOS的API中就做了证书链验证,它会把整条链都验证一遍,才算是安全,至于如何找到上一级的证书,X.509的证书标准的数据结构中固定的数据,表明证书的颁发机构等信息,足矣找到上级证书.</p>
+
+<h5 id="toc_9">关于token(更好的理解数字签名)</h5>
+
+<p>简单说一下token,token其实也是一种数字签名,这也就是为什么token能认证用户的原因,大家可以看一下自己服务器返回的token,其实它是一个三段式,XXX.XXXXXX.XXXXXXXXX,第一段,是一段json,然后用base64加密,json中说明了token的加密方式和一些信息,第二段也是一段json,也是用base64加密,这一段的json中是用户的唯一标示信息和一些非关键数据.第三段是用第一段中表明的加密算法(一般是SHA256)和秘钥把把第一段和第二段的数据加密,形成这样的三段式.这样做后,服务器拿到token,把第三段的数据解密,和前两段对比,如果一致,说明数据没有被篡改.如果劫持者修改了任何一段数据都会导致解密失败,或对比不一致,验证也就失败了.所以大家可以发现,数字签名的原理都是一样的,只不过用在不用的地方,标准不同而已.它最主要的作用就是防篡改.</p>
+
+<p>原归正传<br/>
+这样整个过程就安全了.(实际请求的时候对称秘钥是握手阶段中三个随机数共同决定的,至于为什么三个随机数共同决定的)</p>
 
 <blockquote>
-<p>这里我想稍微展开一下,就是抽象的这一个过程,自从上学开始,我们就一直没有离开过这个词,只不过小学的老师从来不会和你说这个词,因为说了你也不懂,但是抽象经常会和一个词一起说,那就是建模.维基百科给的解释有点模糊,我更偏向百度百科的解释:建模就是建立模型，就是为了理解事物而对事物做出的一种抽象，是对事物的一种无歧义的书面描述.数学都是从实际的特殊的问题出发,将它抽象,一般化,再去解决实际的问题.</p>
-
-<p>这个世界很多道理都是相通的,社会哲学和自然科学一直也是相辅相成的.说了这么多,就是想表达,很多东西,思想都是一样的.我们今天要做的这一个简单的下拉刷新的封装也是一样,从一个特殊的下拉刷新出发,抽象成一个一般化的控件,并用它来解决各类不同需求的刷新问题.以后我们封装别的控件,做别的框架也可以用这样的思想.当然这只是个人理解.当我瞎扯淡就好~~</p>
+<p>&quot;不管是客户端还是服务器，都需要随机数，这样生成的密钥才不会每次都一样。由于SSL协议中证书是静态的，因此十分有必要引入一种随机因素来保证协商出来的密钥的随机性。<br/>
+对于RSA密钥交换算法来说，pre-master-key本身就是一个随机数，再加上hello消息中的随机，三个随机数通过一个密钥导出器最终导出一个对称密钥。<br/>
+pre master的存在在于SSL协议不信任每个主机都能产生完全随机的随机数，如果随机数不随机，那么pre master secret就有可能被猜出来，那么仅适用pre master secret作为密钥就不合适了，因此必须引入新的随机因素，那么客户端和服务器加上pre master secret三个随机数一同生成的密钥就不容易被猜出了，一个伪随机可能完全不随机，可是是三个伪随机就十分接近随机了，每增加一个自由度，随机性增加的可不是一。&quot;</p>
 </blockquote>
 
-<p>回到之前说的,把用户的操作,抽象成一个数据模型,要想下拉刷新,用户要下拉ScrollView,到一定程度,然后松手,数据刷新.那么其实我们可以把它抽象成三种状态对应一个枚举类型</p>
+<p>那如果是双向认证,Client的端也需要配置一个证书.但一般情况下我们不需要做双向认证.<br/>
+<img src="media/15221395300202/15233326775966.jpg" alt="" style="width:768px;"/><br/>
+这样这个HTTPS的原理,我们就梳理清楚了.<br/>
+下面是我参考的一些资料</p>
 
-<pre><code class="language-Swift">enum RefreshStatus : String{
-    case pullToRefresh    = &quot;下拉刷新&quot;
-    case loading          = &quot;正在加载&quot;
-    case releaseToRefresh = &quot;松开刷新&quot;
-}
-</code></pre>
-
-<p>用户开始拖拽的时候是下拉刷新状态,到一定程度,用户还去拖拽,就变成松开刷新的状态,然后用户松手了,就是正在加载状态,最后加载完毕,回到下拉刷新状态,这样一个闭环.确定了这几个状态,我们需要和用户拖拽距离这个数据做配合来改变状态,然后在根据状态的改变来做出UI不同的展示,响应给用户.这就需要做监听</p>
-
-<pre><code class="language-Swift">    override func willMove(toSuperview newSuperview: UIView?) {
-        guard let view = newSuperview as? UIScrollView else{
-            return
-        }
-        scrollView = view
-        scrollView?.addObserver(self, forKeyPath: &quot;contentOffset&quot;, options: NSKeyValueObservingOptions.new, context: nil)
-        
-    }
-</code></pre>
-
-<p>当我这个View被添加到ScrollView的时候做监听<code>contentOffset</code>属性</p>
-
-<pre><code class="language-swift">override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-    if let path = keyPath,path == &quot;contentOffset&quot;{
-        let contontMaxY = -(pullHeight + (scrollView.contentInset.top))
-        let y = scrollView.contentOffset.y
-        refreshView?.refreshContentOffset(scrollView.contentOffset)
-        //拖拽
-        if scrollView.isDragging{
-            if y &gt; contontMaxY{
-                type = .pullToRefresh
-            }else{
-                type = .releaseToRefresh
-            }
-        }else{
-        //松手
-            if type == .releaseToRefresh{
-                self.beginHeaderRefreshing()
-            }
-        }
-    }
-}
-</code></pre>
-
-<p>根据用户下拉的距离的变化,和手是否在屏幕上在相关的逻辑判断来改变状态.最后就是根据状态来改变UI了,我把它写到了枚举的didset里,来统一管理.</p>
-
-<pre><code class="language-Swift">    var type = RefreshStatus.pullToRefresh{
-        didSet{
-            titleLabel.text = type.rawValue
-        }
-    }
-</code></pre>
-
-<p>跑起来的效果是<img src="media/15113233292599/normal.gif" alt="norma"/></p>
-
-<p>作为一个第一版的Demo,它是可以接受的.当然我们还需要增加许多方法,比如<code>func beginHeaderRefreshing()</code> <code>func endHeaderRefreshing()</code></p>
-
-<h4 id="toc_1">单一职责,功能拆分,易扩展,去依赖</h4>
-
-<p>首先第一点单一职责.这个RefreshView它现在做了好多事,监听用户的滑动手势是它在做,UI的动态更新给用户反馈也是它在做,它一个View做了两件事,这显然没有做到单一职责.我们需要把这个监听放到manager里,让manager去管理view,用户的操作会改变manager里的枚举状态,manager的每当状态改变的时候都会通知view,嘿~哥们,你该变成xxx状态的样子了.然后view改变.这样,我们做到了单一职责,功能也拆分的很明确.<br/>
-这时候我们在ScrollView中,添加的get方法就不能返回View了,而是Manager,Manager中实现<code>RefreshControl</code>这个协议</p>
-
-<pre><code class="language-Swift">protocol RefreshControl{
-    func beginHeaderRefreshing()
-    func endHeaderRefreshing()
-    func addPullRefresh(_ refreshView : RefreshStatusChangeProtocol &amp; UIView,_ action: @escaping (() -&gt;Void))
-}
-</code></pre>
-
-<p>在<code>addPullRefresh</code>的时候创建Manager</p>
-
-<pre><code class="language-Swift">func addPullRefresh(_ refreshView: UIView &amp; RefreshStatusChangeProtocol = RefreshViewConfig.share.defaultView, _ action: @escaping (() -&gt; Void)) {
-        for subView in scroll.subviews{
-            if let refreshView = subView as? (UIView &amp; RefreshStatusChangeProtocol){
-                refreshView.removeFromSuperview()
-            }
-        }
-        let refreshViewManager = RefreshViewManager(scrollView: scroll)
-        refreshViewMaker.addPullRefresh(refreshView, action)    
-    }
-</code></pre>
-
-<p>为了防止重复添加,每次添加的时候都遍历一遍ScrollView,将重复的删掉[1].然后创建Manager,并将负责展示的View传到manager中去,</p>
-
-<pre><code class="language-Swift">func addPullRefresh( _ refreshView: (UIView &amp; RefreshStatusChangeProtocol), _ action: @escaping (() -&gt;Void)){
-        self.action = action
-        self.refreshView = refreshView
-        self.scrollView.addSubview(refreshView)
-        self.snp.make{make in
-            xxxxxxxx
-        }
-    }
-</code></pre>
-
-<p>在Manager中 将view添加在ScrollView上.</p>
-
-<pre><code class="language-Swift">init(scrollView : UIScrollView) {
-    super.init(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    self.scrollView = scrollView
-    self.scrollView.addObserver(self, forKeyPath: &quot;contentOffset&quot;, options: NSKeyValueObservingOptions.new, context: nil)
-}
-</code></pre>
-
-<p>并在manger的init方法里,对scrollView.contentOffset做监听.</p>
-
-<pre><code class="language-Swift">extension UIScrollView{
-    var pd : RefreshControl
-    {
-        return RefreshViewManager(scroll: self)
-    }
-}
-</code></pre>
-
-<p>这时ScrollView的扩展应该改为这个样子了,每次调用pd,都会返回RefreshControl这些协议类型,业务层也可以调用到声明的三个方法.这样做的目的是为什么?为什么不直接返回直接返回Manager?这样可以大大减少业务端使用的难度,也是为了更加的安全,返回给外层的,就仅仅是一个协议类型,没有任何多余的function.<br/>
-Manager的工作完成了我们在来看看RefreshView</p>
-
-<pre><code class="language-Swift">///只可以UIView来实现
-protocol RefreshStatusChangeProtocol where Self : UIView {
-    func refreshStatusChange(type : RefreshStatus)
-    func refreshContentOffset(_ contentOffset: CGPoint)
-     var refreshViewManager: RefreshControl? {
-        get
-        set
-    }
-}
-</code></pre>
-
-<p>RefreshView要做的事很简单,就是实现这个协议,下拉Status发生改变的时候manger会调用<code>refreshStatusChange(type : RefreshStatus)</code>,要是有特殊的需要,就实现<code>refreshContentOffset(_ contentOffset: CGPoint)</code>,至于那个get set的属性,我们暂时先不说.<br/>
-这样,我们对这个控件做了一次优化,让我们跑起来看一下效果.但是结果是悲哀的,那就是崩溃了.这个问题,困惑了我很久,报的错误是监听的对象已经不在了.后来我发现,Manager被释放了,所以监听的位置崩溃了.</p>
-
-<p>在ScrollView的扩展当中,每次都会返回一个新的Manager,也就是说每次业务层在调用<code>scrollView.pd.addPullRefresh(_ refreshView : RefreshStatusChangeProtocol &amp; UIView,_ action: @escaping (() -&gt;Void))</code>之后,manager就已经被释放了,而manger中却在监听ScrollView的滑动,所以crash了.但是下拉刷新的View却不会释放,因为它添加到ScrollView上,被ScrollView持有了.这就非常尴尬了,我们把功能拆分了,但是manager又是一个很尴尬的存在,因为谁都不想要它.扩展中只能添加计算属性,不能添加存储属性,所以每次get方法调用完之后,都会被释放.这里我有两种方法,一个是把manager也变成一个View 添加到ScrollView当中,成为下拉刷新View的父View.第二种,把让RefreshView持有manager.这样refreshView不释放,那manager也不会释放.他们的生命周期是一样的.最后我选了第二种.这就是<code>RefreshStatusChangeProtocol</code>增了的那个属性的原因.用它来持有manager,这样就不会释放了.(这个权衡要放在后面讨论)<br/>
-还有最后一步,那就是去依赖,一个好的第三方库,肯定是依赖越少越好,我们在这里用了Snapkit,我们换成系统的autolayout</p>
-
-<pre><code class="language-Swift">refreshView.translatesAutoresizingMaskIntoConstraints = false
-self.scrollView.addSubview(refreshView)
-self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.left, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.left, multiplier: 1, constant: 0))
-self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.right, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.right, multiplier: 1, constant: 0))
-self.scrollView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.bottom, relatedBy: NSLayoutRelation.equal, toItem: scrollView, attribute: NSLayoutAttribute.top, multiplier: 1, constant: 0))
-refreshView.addConstraint(NSLayoutConstraint(item: refreshView, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.height, multiplier: 1, constant: pullHeight))
-</code></pre>
-
-<p>这样一来,这次优化算是完成了.核心功能完成后,那就是锦上添花了,就是定义几个不同样式的RefreshView,给大家提供使用.但这个时候,又一个问题就被抛出来了,你定义了那么多RefreshView,每个都有不用的下拉刷新效果,那你准备怎么让业务端使用这些View呢.</p>
-
-<pre><code class="language-Swift">scrollView.pd.addPullRefresh(RefreshView()) {
-    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2, execute: {
-        self.scrollView.pd.endHeaderRefreshing()
-    })
-}
-</code></pre>
-
-<p>在没有优化之前,我们是这样调用的.我们必须传一个View和一个action,这个action属性很有必要,因为每个ScrollView刷下要执行的业务都是不一样的,但是这个View就不是很有必要了,一个App大部分的刷新样式都是一样的,我们每次添加下拉刷新都需要传一个View,这显然很麻烦,所以我决定加一个默认值,这样当使用默认的View的时候就可以不用传了,由于协议类型不可以有默认是方法,所以我就又做了一个Struct,来实现默认值.然后,又做了一个config.swift,可以配置默认的View和下拉的高度.这里就不在细说.可以clone下代码看下.嘻嘻<br/>
-下面我们开始定义不同样式的刷新.</p>
-
-<pre><code class="language-Swift">class RefreshViewConfig {
-    static let share = RefreshViewConfig()
-    var defaultView: (UIView&amp;RefreshStatusChangeProtocol) {
-        get{
-            return CustomAnimateRefreshView()
-        }
-    }
-    var defaultPullHeight: CGFloat = 60
-}
-</code></pre>
-
-<h4 id="toc_2">带有不同动画的RefreshView</h4>
-
-<ul>
-<li> 普通的下拉刷新(类似新浪微博)</li>
-</ul>
-
-<p><img src="media/15113233292599/sina.gif" alt="sina"/></p>
-
-<p>经过我们对功能的拆分,它的代码简单至极,实现这样的效果,仅仅需要40行代码.</p>
-
-<pre><code class="language-Swift">class NormalRefreshView: UIView,RefreshStatusChangeProtocol {
-    var refreViewMake: RefreshControl?
-    @IBOutlet weak var refreshImage: UIImageView!
-    @IBOutlet weak var activityIndicatorView: UIActivityIndicatorView!
-    @IBOutlet private weak var titleLabel: UILabel!
-    func refreshStatusChange(type: RefreshStatus) {
-        switch type {
-        case .loading:
-            titleLabel.text = &quot;正在加载&quot;
-            refreshImage.isHidden = true
-            activityIndicatorView.startAnimating()
-        case .pullToRefresh:
-            refreshImage.isHidden = false
-            titleLabel.text = &quot;下拉刷新&quot;
-            activityIndicatorView.stopAnimating()
-                self.refreshImage.transform = self.refreshImage.transform.rotated(by: CGFloat.pi)
-        case .releaseToRefresh:
-            refreshImage.isHidden = false
-            titleLabel.text = &quot;松开刷新&quot;
-            activityIndicatorView.stopAnimating()
-            UIView.animate(withDuration: 0.2, animations: {
-                self.refreshImage.transform = self.refreshImage.transform.rotated(by: CGFloat.pi)
-            })
-        }
-    }
-    class func getXibView() -&gt; NormalRefreshView{
-        let view = Bundle.main.loadNibNamed(&quot;NormalRefreshView&quot;, owner: self, options: nil)?.last as! NormalRefreshView
-        return view
-    }
-    func refreshContentOffset(_ contentOffset: CGPoint) {
-    }
-}
-</code></pre>
-
-<ul>
-<li> 简单动效的刷新</li>
-</ul>
-
-<p><img src="media/15113233292599/cycle.gif" alt="cycle"/><br/>
-它的代码不需要很多,100多行足矣,使用<code>UIBezierPath</code>,<code>CAShapeLayer</code>,<code>CAKeyframeAnimation</code>,<code>CAAnimationGroup</code>配合起来使用,就可以了~但我对效果还是有点不太满意,还需要优化.</p>
-
-<h4 id="toc_3">总结</h4>
-
-<p>到这里,一个下拉刷新的控件就封装完了,下面我要提出一些疑问.</p>
-
-<p>最大的疑问就是在功能拆分的时候manger被释放的问题,我当时提出的两种方案,一种View嵌套的模式,由父view监听用户的动作,子view展示.第二种是将由view引用manger.当时我选择了第二种,我也很难说服自己用哪个好,因为我觉得用哪个都不好.所以这个疑问就放到了最后.</p>
-
-<p>说一下继承,当这篇博客要写完的时候,我在发现了我当初那个问题的答案,至少我心里是满意的答案,就是继承,可能现在提出继承大家会不屑一顾,在这个面向协议,面向切面横行的年代,提出继承未免有点过时了.也正因为我的这个思想导致我一开始设计的时候就总想着面向协议,现在回头想一想,那个manger没有引用,被释放了,其实也说明它是个累赘,或者说它是多余的,但是我们的功能还必须要拆分,这时候我就应该想到继承了,basicView里的私有方法监听,并调用public的方法,public function 负责的实现由继承basicView的View自己来override,子View只在乎动画的效果.</p>
-
-<p>继承确实会有很多问题,比如经典的菱形问题,也有很多诟病,但是任何一种思想,一种设计模式,存在就一定是有意义,它们都各有优缺点,这世界本就没有完美的事物,我们在使用的时候需要权衡利弊选择最合适的.<br/>
-最后~<a href="https://github.com/RookieNeo/NeoRefresh.git">Github地址</a><br/>
-</font></p>
+<p><a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services"></a><a href="https://developer.apple.com/documentation/security/certificate_key_and_trust_services">https://developer.apple.com/documentation/security/certificate_key_and_trust_services</a><br/>
+<a href="http://swiftcafe.io/2016/04/16/swift-https"></a><a href="http://swiftcafe.io/2016/04/16/swift-https">http://swiftcafe.io/2016/04/16/swift-https</a><br/>
+<a href="https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA"></a><a href="https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA">https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA</a><br/>
+<a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html"></a><a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html">http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html</a><br/>
+<a href="https://blog.csdn.net/it_man/article/details/24698093"></a><a href="https://blog.csdn.net/it_man/article/details/24698093">https://blog.csdn.net/it_man/article/details/24698093</a></p>
 
 
 		</div>

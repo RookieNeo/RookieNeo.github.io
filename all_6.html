@@ -47,6 +47,8 @@
         <li><label>Swift</label></li>
 
           
+            <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+          
             <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
           
             <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
@@ -100,6 +102,8 @@
                     
                       <li class="side-title"><span>Swift</span></li>
                         
+                          <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+                        
                           <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
                         
                           <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
@@ -146,16 +150,154 @@
 
 	
 		<div class="markdown-body">
-		<h1>Swift的一种常用类型</h1>
+		<h1>Swift中对UserDefaults的封装</h1>
 
-		<p><img src="media/14936911497977/14936911882116.jpg" alt=""/></p>
+		<p>Founddation中UserDefaults是一种很轻量化的本地化工具,实际开发中经常会使用,由于苹果中很多类库还没有用Swift重写,所以在Swift中用UserDefaults就显示不是很Swift,还是OC的感觉,所以我就想对UserDefaults进行一次封装,让它更Swift,用起来更方便.我最早由这种想法实在Swift2的时候,那时候就感觉用起来不是很方便了,但是没有多想,之后又看到了一篇文章<a href="http://radex.io/swift/nsuserdefaults/">传送门</a>,它是用Swift中subscript的方法对NSUserDefaults进行了封装,Swift中,Dic[key],Array[index],都是使用了subscript方法.我就是参照这位外国友人的思路进行了封装.</p>
 
-<h6 id="toc_0">这是我在公司项目用到的一种用于网络请求返回数据的类型,我第一次见到它是Alamofire的源码中,他对网络请求的数据就进行了一种这样的封装,当时就觉得不错,不过并没有在意,后来又在喵神翻译的swift进阶中又看了,于是就抱着试一试的态度用一下,果然效果还是不错的.</h6>
+<h2 id="toc_0">[subscript] + 泛型 的方式</h2>
 
-<h5 id="toc_1">我个人认为这是一个加强版的可选类型,其实可选类型就是一个枚举值,有value和nil两个枚举值,这个DataResult也是一个枚举值,有error和value两种枚举值,区别是可选类型对返回时nil的情况并不在意,更在意的是结果,只要告诉我有或者没有就可以了,而DataResult类型比可选类型更重视返回错误时的情况,所以我觉得这很适合用在网络请求的返回值中,有数据的时候就是成功,没有数据的时候就是失败,失败的时候返回error类型给业务层做相应的处理.</h5>
+<p>这是我最开始的设计思路,先看代码</p>
 
-<p><img src="media/14936911497977/14936925384241.jpg" alt=""/><br/>
-这是业务层的使用情况,data就是DataResult类型,也可以使用if else 还做处理,这就是extension中isSuccess和isFailure的作用.</p>
+<pre><code class="language-Swift">protocol UserDefaultProtocol {
+    func getKey() -&gt; String
+}
+enum DefaultsKey: String,UserDefaultProtocol {
+    case token
+    case name
+    case mobile
+    func getKey() -&gt; String {
+        return self.rawValue
+    }
+}
+public let Defaults = UserDefaults.standard
+extension UserDefaults {
+    
+    subscript(key: UserDefaultProtocol) -&gt; Fakegenericity {
+        return Fakegenericity(self, key.getKey())
+    }
+    subscript(key: UserDefaultProtocol) -&gt; Any?{
+        get{
+            let genericity : Fakegenericity = self[key]
+            return genericity
+        }
+        set{
+            guard let newValue = newValue else {
+                removeObject(forKey: key.getKey())
+                return
+            }
+            switch newValue {
+            case let v as Double:
+                self.set(v, forKey: key.getKey())
+            case let v as Int:
+                self.set(v, forKey: key.getKey())
+            case let v as Bool:
+                self.set(v, forKey: key.getKey())
+            case let v as URL:
+                self.set(v, forKey: key.getKey())
+            default:
+                self.set(newValue, forKey: key.getKey())
+            }
+        }
+    }
+    ///直接根据key取int  double等  就算取不到  也会返回 0  当有要存储0的需求时候  会有问题  所以 用过根据 object 去数据转 nsnumer  判断number?  使取 bool int等类型时  没有值会返回nil
+    func numberForKey(_ key: String) -&gt; NSNumber? {
+        return object(forKey: key) as? NSNumber
+    }
+    
+    /// Returns `true` if `key` exists
+    func hasKey(key: UserDefaultProtocol) -&gt; Bool {
+        return object(forKey: key.getKey()) != nil
+    }
+    
+    func removeAll(){
+        for(key,_) in dictionaryRepresentation() {
+            removeObject(forKey: key)
+        }
+    }
+    func remove(key: UserDefaultProtocol){
+        removeObject(forKey: key.getKey())
+    }
+    class Fakegenericity {
+        fileprivate let defaults: UserDefaults
+        fileprivate let key: String
+        
+        fileprivate init(_ defaults: UserDefaults, _ key: String) {
+            self.defaults = defaults
+            self.key = key
+        }
+        
+        // MARK: only - get
+        public var object: Any? {
+            return defaults.object(forKey: key)
+        }
+        
+        public var string: String? {
+            return defaults.string(forKey: key)
+        }
+        
+        public var array: [Any]? {
+            return defaults.array(forKey: key)
+        }
+        
+        public var dictionary: [String: Any]? {
+            return defaults.dictionary(forKey: key)
+        }
+        
+        public var data: Data? {
+            return defaults.data(forKey: key)
+        }
+        
+        //        public var date: Date? {
+        //            return object as? Date
+        //        }
+        
+        public var number: NSNumber? {
+            return defaults.numberForKey(key)
+        }
+        
+        public var int: Int? {
+            return number?.intValue
+        }
+        
+        public var double: Double? {
+            return number?.doubleValue
+        }
+        
+        public var bool: Bool? {
+            return number?.boolValue
+        }
+        
+        
+        public var stringValue: String {
+            return string ?? &quot;&quot;
+        }
+        
+        public var arrayValue: [Any] {
+            return array ?? []
+        }
+        
+        public var dictionaryValue: [String: Any] {
+            return dictionary ?? [:]
+        }
+        
+        public var dataValue: Data {
+            return data ?? Data()
+        }
+        
+        public var intValue: Int {
+            return int ?? 0
+        }
+        
+        public var doubleValue: Double {
+            return double ?? 0
+        }
+        
+        public var boolValue: Bool {
+            return bool ?? false
+        }
+    }
+}
+</code></pre>
 
 
 		</div>
