@@ -1,0 +1,247 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  从学习RunLoop到研究线程中同步和异步的关系 - RookieNeo
+  
+  </title>
+ <meta name="description" content="">
+ <link href="atom.xml" rel="alternate" title="RookieNeo" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+<div id="header">
+    <h1><a href="index.html">RookieNeo</a></h1>
+</div>
+
+</nav>
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; RookieNeo</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+      <li><a href="index.html">Home</a></li>
+      
+        <li class="divider"></li>
+        <li><label>Swift</label></li>
+
+          
+            <li><a title="Hash表" href="16377537990965.html">Hash表</a></li>
+          
+            <li><a title="从UTF-8到Bytes数组都经历了什么" href="16164841975946.html">从UTF-8到Bytes数组都经历了什么</a></li>
+          
+            <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+          
+            <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
+          
+            <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
+          
+            <li><a title="2018总结" href="15476925512340.html">2018总结</a></li>
+          
+            <li><a title="关于HTTPS的探究" href="15221395300202.html">关于HTTPS的探究</a></li>
+          
+            <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
+          
+            <li><a title="从学习RunLoop到研究线程中同步和异步的关系" href="15035372165055.html">从学习RunLoop到研究线程中同步和异步的关系</a></li>
+          
+            <li><a title="对Swift写时复制技术的理解" href="15034498083541.html">对Swift写时复制技术的理解</a></li>
+          
+            <li><a title="从切圆角引发的对iOS动画框架的探究" href="15026719129123.html">从切圆角引发的对iOS动画框架的探究</a></li>
+          
+            <li><a title="基于Alamofire网络库的二次封装" href="15017218903153.html">基于Alamofire网络库的二次封装</a></li>
+          
+            <li><a title="Swift中对于有先后顺序的网络请求的优化" href="15008764200399.html">Swift中对于有先后顺序的网络请求的优化</a></li>
+          
+            <li><a title="Whats-new-in-swift-4 (上)" href="14969065461458.html">Whats-new-in-swift-4 (上)</a></li>
+          
+            <li><a title="Swift中对UserDefaults的封装" href="14956811508929.html">Swift中对UserDefaults的封装</a></li>
+          
+            <li><a title="Swift的一种常用类型" href="14936931972013.html">Swift的一种常用类型</a></li>
+          
+            <li><a title="按钮加下拉弹框控件的封装" href="14924176125873.html">按钮加下拉弹框控件的封装</a></li>
+          
+
+      
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+        <section id="main-content" role="main" class="scroll-container">
+
+          <div class="row">
+            <div class="large-3 medium-3 columns">
+              <div class="hide-for-small">
+                <div class="sidebar">
+                <nav>
+                  <ul id="side-nav" class="side-nav">
+
+                    
+                      <li class="side-title"><span>Swift</span></li>
+                        
+                          <li><a title="Hash表" href="16377537990965.html">Hash表</a></li>
+                        
+                          <li><a title="从UTF-8到Bytes数组都经历了什么" href="16164841975946.html">从UTF-8到Bytes数组都经历了什么</a></li>
+                        
+                          <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="15972361312490.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+                        
+                          <li><a title="学习SwiftUI两周之后" href="15611299445693.html">学习SwiftUI两周之后</a></li>
+                        
+                          <li><a title="沙漏动画" href="15367255656449.html">沙漏动画</a></li>
+                        
+                          <li><a title="2018总结" href="15476925512340.html">2018总结</a></li>
+                        
+                          <li><a title="关于HTTPS的探究" href="15221395300202.html">关于HTTPS的探究</a></li>
+                        
+                          <li><a title="灵活扩展的下拉刷新控件的封装" href="15113233292599.html">灵活扩展的下拉刷新控件的封装</a></li>
+                        
+                          <li><a title="从学习RunLoop到研究线程中同步和异步的关系" href="15035372165055.html">从学习RunLoop到研究线程中同步和异步的关系</a></li>
+                        
+                          <li><a title="对Swift写时复制技术的理解" href="15034498083541.html">对Swift写时复制技术的理解</a></li>
+                        
+                          <li><a title="从切圆角引发的对iOS动画框架的探究" href="15026719129123.html">从切圆角引发的对iOS动画框架的探究</a></li>
+                        
+                          <li><a title="基于Alamofire网络库的二次封装" href="15017218903153.html">基于Alamofire网络库的二次封装</a></li>
+                        
+                          <li><a title="Swift中对于有先后顺序的网络请求的优化" href="15008764200399.html">Swift中对于有先后顺序的网络请求的优化</a></li>
+                        
+                          <li><a title="Whats-new-in-swift-4 (上)" href="14969065461458.html">Whats-new-in-swift-4 (上)</a></li>
+                        
+                          <li><a title="Swift中对UserDefaults的封装" href="14956811508929.html">Swift中对UserDefaults的封装</a></li>
+                        
+                          <li><a title="Swift的一种常用类型" href="14936931972013.html">Swift的一种常用类型</a></li>
+                        
+                          <li><a title="按钮加下拉弹框控件的封装" href="14924176125873.html">按钮加下拉弹框控件的封装</a></li>
+                        
+
+                    
+                  </ul>
+                </nav>
+                </div>
+              </div>
+            </div>
+            <div class="large-9 medium-9 columns">
+
+ <div class="markdown-body">
+<h1>从学习RunLoop到研究线程中同步和异步的关系</h1>
+
+<h1 id="toc_0"><img src="media/15032778472509/15032778518396.jpg" alt=""/></h1>
+
+<p><a href="http://v.youku.com/v_show/id_XODgxODkzODI0.html">sunnyxx的视频,说的应该是比较明白了,但是我还是有点理解不上去,主要还是没有这种设计的思维</a></p>
+
+<h4 id="toc_1">主队列同步执行为什么会死锁</h4>
+
+<pre><code>NSLog(@&quot;1&quot;);
+dispatch_sync(dispatch_get_main_queue(), ^{
+     NSLog(@&quot;2&quot;);
+});
+NSLog(@&quot;3&quot;);
+</code></pre>
+
+<p>主线程中 执行代码本身就是一个任务.在添加NSLog2任务的时候 任务2加再任务一之后,但是因为必须同步执行,所以任务2要执行完毕 才可执行任务1,任务1又必须执行完毕才可以执行任务2</p>
+
+<h4 id="toc_2">串行队列中同步和异步的区别</h4>
+
+<p>简单的说同步和异步的区别就是是否会阻塞线程<br/>
+<img src="media/15032778472509/15033020499481.jpg" alt=""/><br/>
+上面的代码中,通过断点可以看出,在同步执行的时候,第一个for循环不执行完毕,21行的断点是不会走的,说明线程是阻塞状态.当第一个for循环执行完毕之后,才会到第21行的断点,然后在执行第二个for循环.<br/>
+如果把sync 改为async 异步的时候将四个断点按顺序牌号,执行的顺序是1324,无论要执行的代码是什么,都不会影响线程的阻塞.<br/>
+所以这就可以解释为什么不能再主线程中同步执行代码,主线程中,执行整个代码是一项任务,如果在添加同步任务的话,同步任务必须要执行完毕才可以向下执行,但是整个代码又必须执行完毕才可以执行同步任务(因为在串行队列中,同步任务在整个任务之后).<br/>
+但是不在主线程中就不会出现这种情况,因为子线程中没有要执行整个代码的任务.所以它可以随时阻塞下来,等任务一个任务执行完毕在执行其他的任务.<br/>
+总结,主线程中不能执行同步任务的主要原因就是主线程是运行程序的线程,它阻塞了,程序就停了...</p>
+
+
+</div>
+
+<br /><br />
+<hr />
+
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
+		
+	        <a href="15113233292599.html"  title="Previous Post: 灵活扩展的下拉刷新控件的封装">&laquo; 灵活扩展的下拉刷新控件的封装</a>
+	    
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
+		
+	        <a href="15034498083541.html" 
+	        title="Next Post: 对Swift写时复制技术的理解">对Swift写时复制技术的理解 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
+
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
+
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '15035372165055.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
+</div></div>
+
+
+<div class="page-bottom">
+  <div class="row">
+  <hr />
+  <div class="small-9 columns">
+  <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+  <div class="small-3 columns">
+  <p class="copyright text-right"><a href="#header">TOP</a></p>
+  </div>
+   
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+    
+    
+    <script src="asset/js/foundation.min.js"></script>
+    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
+    <script>
+      $(document).foundation();
+
+     
+    </script>
+    
+
+
+  </body>
+</html>
