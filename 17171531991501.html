@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Archives - RookieNeo
+  学习SwiftUI两周之后 - RookieNeo
   
   </title>
  <meta name="description" content="">
@@ -162,324 +162,66 @@
             <div class="large-9 medium-9 columns">
 
  <div class="markdown-body">
-	
-		 
-		  	<h2>2021</h2>
-		
-		
-			<div>
-				<h3><a href="17171531993977.html">从UTF-8到Bytes数组都经历了什么</a></h3>
-				<p>
-					<time datetime="2021-05-31T18:59:59+08:00" pubdate><span class='month'>5月</span> <span class='day'>31</span> <span class='year'>2021</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<h1>学习SwiftUI两周之后</h1>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2020</h2>
-		
-		
-			<div>
-				<h3><a href="17173303899677.html">iOS 事件的传递链和响应链</a></h3>
-				<p>
-					<time datetime="2020-12-09T20:13:09+08:00" pubdate><span class='month'>12月</span> <span class='day'>09</span> <span class='year'>2020</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<p>苹果公司推出SwiftUI已经有小半个月了,当然我也学了有10来天了,一是我真的想学,了解过Web端的童鞋都知道在开发体验上,iOS端差了多少...二是公司的App想用SwiftUI重写,我作为先头部队,就这么出发了.</p>
+<h3><a id="%E5%85%B3%E4%BA%8Eswift" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>关于Swift</h3>
+<p>我是从Swift2开始学习的,其实当时学也没啥太大感受,作为一个还没毕业的实习生,我懂得太少,Swift的好处,缺点我也都看不到.现在Swift已经到5.1了,这么多年走下来,以为个人的感受来说,我学过Java,JS,Python,Go,React...各种语言,框架,但我还是觉得Swift最好(个人观点),虽然说一年学一次新语言有点过分了,但是Swift发展的速度真是肉眼可见,一门新的语言,不稳定,各方面支持都不是很好,这是很正常的,但是我庆幸我能和Swift一起生长,我想如果我现在还在用OC,那我可能有很多思想,框架,思维方式,都不会去了解,也不想去了解.但是Swift很年轻,开源之后社区也很活跃,我每天在其中学习,开阔了我的眼界,让我时刻走在技术发展的前沿,带给我的不仅仅是学了一门语言这么简单.<br />
+也正是因为开阔了我的眼界,我才知道了<code>Redux</code>,才知道了前端的开发方式,知道了移动端开发是多么的落后,已经完全跟不上Web的节奏了.正当我要忍无可忍,被MVC这种松散的架构,被Xib,Nib,被时刻要保持数据和UI之间统一的coding方式逼疯的时候,SwiftUI横空出世,我看到它的第一眼,心里是感动,真的,有一种苹果原来还记得我们,一群无助的开发者,一群羡慕前端的却无处诉苦的开发者.让苹果的开发者也可以像Web开发一样,hot reload,声明式的Coding UI的方式,<code>Combine</code>框架带来新的DataFlow,甚至超越了Web的开发体验.所以第二天晚上,我就更新Mac,更新Xcode,学了起来.</p>
+<h3><a id="swiftui%E7%9A%84%E4%BC%98%E7%82%B9" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>SwiftUI的优点</h3>
+<p>学了差不多有两周的<code>SwiftUI</code>,优点还是很多的<br />
+首先,在也不用时刻考虑保持数据和UI的如何同步了,以前,如果一个页面的一个<code>Switch</code>,会<code>hidden</code>一个<code>view</code>,但我们只能添加一个<code>property</code>,在其<code>didset</code>中设置<code>View.isHidden</code>属性,可想而知当页面复杂之后,它是有多么难管理,牵一发动全身,每多出一个UI的State,你都要考虑是否会影响到其它的控件,相信所有的iOS开发都深有体会,90%以上的Bug也都是这么来的.现在在SwiftUI中,我们有了<code>@State</code>,<code>@Binding</code>,<code>@ObjectBinding</code>,<code>@BindableObject</code>,<code>@Environment</code>之后,当一个属性改变之后,与其相关的UI将自动<code>reload</code>,这体验简直不要太爽.<br />
+HotReload也是对生产力的重大提升,以往,在发开中,如果想调试某个页面,就必须运行模拟器,如果这个页面很深,再加上项目大了之后,每一次编译都是30s以上,也就意味着你可能就为了调试一个属性,画了1s改了一行代码,但是为了验证这件事,却花了1min,这是多么低的效率,但有了hot reload之后,每次修改之后,Xcode Preview 会自动刷新页面(在不增加property的情况),<code>common + option + p</code> 是我现在最喜欢的快捷键.<br />
+声明式的UI是一种和以往开发完全不同的方式,现在的UI开发起来就像是说话一样,我需要一个列表,列表里面有10行,每一个里都有什么数据,说完了,也就写完了.当然这种新的思维方式需要时间去感受,去理解.<br />
+Combine作为一个响应式的框架,能带来的不仅仅是UI上的便利,以后它会深入到iOS开发的每个细节,网络,本地化,缓存等各个方面.</p>
+<h3><a id="%E4%BD%BF%E7%94%A8%E6%84%9F%E5%8F%97" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>使用感受</h3>
+<p>在学了2周之后,现在给我的感觉就是它并达不到一个能够做出生产级别产品的能力,如果不依靠UIKit,那它能做的事还是很有限,如果按照WWDC上的那套苹果为我们封装好的UI还写,那还是很方便的,但是相信每一家公司都会对自己的产品有自己的理解,这会完完全全的展现在产品的设计上,这就需要工程师做大量的自定义View,在这方面,现在的SwiftUI还很弱,当然,它还小,需要生长.<br />
+还有一个方面就是代码的联想速度,应该已经不能用速度来形容了,压根儿就联想不出来.Swift的老毛病,也体现在了Swift UI上了,这一点真的很不爽,因为本来对新的API就不熟悉的情况下,很多东西都需要试出来,但现在试都没法试,而且SwiftUI的API不像是UIKit,你可以在一个控件的class中看到它的属性,现在所有的设置都是用的一个叫modify的东西去做,也就是说你在查看API的时候也不会看到有什么属性,这也导致了我的进度很慢,有时候心态会不太好.<br />
+但我相信这只是暂时的,在9月份正式发布之前,苹果一定会将它做的更加完善.</p>
+<h3><a id="%E6%80%BB%E7%BB%93" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>总结</h3>
+<p>不管怎么说,SwiftUI一定代表着未来苹果的发展方向,其实这也是整个前端的方向,我们必须承认它是好的,SwiftUI已经足够惊艳,我也会继续去学习它,早日把项目替换为SwiftUI+Combine架构的.<br />
+最后附上我最近总结的SwiftUI的一些基本用法<br />
+<a href="https://github.com/RookieNeo/SwiftUIOneStep">https://github.com/RookieNeo/SwiftUIOneStep</a></p>
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531999816.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></h3>
-				<p>
-					<time datetime="2020-08-21T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>21</span> <span class='year'>2020</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2019</h2>
-		
-		
-			<div>
-				<h3><a href="17173351090875.html">图</a></h3>
-				<p>
-					<time datetime="2019-11-15T21:31:49+08:00" pubdate><span class='month'>11月</span> <span class='day'>15</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
+</div>
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17173350023813.html">二叉树</a></h3>
-				<p>
-					<time datetime="2019-09-09T21:30:02+08:00" pubdate><span class='month'>9月</span> <span class='day'>09</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
+<br /><br />
+<hr />
 
-				</p>
-			</div>
- 	
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
 		
+	        <a href="17171531999816.html"  title="Previous Post: 由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究">&laquo; 由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a>
+	    
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
 		
-			<div>
-				<h3><a href="17171531991501.html">学习SwiftUI两周之后</a></h3>
-				<p>
-					<time datetime="2019-06-23T18:59:59+08:00" pubdate><span class='month'>6月</span> <span class='day'>23</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+	        <a href="17171531990780.html" 
+	        title="Next Post: 沙漏动画">沙漏动画 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2018</h2>
-		
-		
-			<div>
-				<h3><a href="17171531990780.html">沙漏动画</a></h3>
-				<p>
-					<time datetime="2018-11-16T18:59:59+08:00" pubdate><span class='month'>11月</span> <span class='day'>16</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531990493.html">Hash表</a></h3>
-				<p>
-					<time datetime="2018-07-19T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>19</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991583.html">关于HTTPS的探究</a></h3>
-				<p>
-					<time datetime="2018-07-05T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>05</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531993833.html">链表</a></h3>
-				<p>
-					<time datetime="2018-07-03T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>03</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991065.html">灵活扩展的下拉刷新控件的封装</a></h3>
-				<p>
-					<time datetime="2018-06-12T18:59:59+08:00" pubdate><span class='month'>6月</span> <span class='day'>12</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2017</h2>
-		
-		
-			<div>
-				<h3><a href="17171531991223.html">从切圆角引发的对iOS动画框架的探究</a></h3>
-				<p>
-					<time datetime="2017-10-05T18:59:59+08:00" pubdate><span class='month'>10月</span> <span class='day'>05</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532001444.html">按钮加下拉弹框控件的封装</a></h3>
-				<p>
-					<time datetime="2017-09-30T19:00:00+08:00" pubdate><span class='month'>9月</span> <span class='day'>30</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991672.html">Whats-new-in-swift-4</a></h3>
-				<p>
-					<time datetime="2017-09-20T18:59:59+08:00" pubdate><span class='month'>9月</span> <span class='day'>20</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991298.html">基于Alamofire网络库的二次封装</a></h3>
-				<p>
-					<time datetime="2017-08-28T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>28</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531990843.html">Swift中对于有先后顺序的网络请求的优化</a></h3>
-				<p>
-					<time datetime="2017-08-15T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>15</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532000864.html">Swift中对UserDefaults的封装</a></h3>
-				<p>
-					<time datetime="2017-07-23T19:00:00+08:00" pubdate><span class='month'>7月</span> <span class='day'>23</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532001692.html">Swift的一种常用类型</a></h3>
-				<p>
-					<time datetime="2017-03-02T19:00:00+08:00" pubdate><span class='month'>3月</span> <span class='day'>02</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2016</h2>
-		
-		
-			<div>
-				<h3><a href="17171532000408.html">对Swift写时复制技术的理解</a></h3>
-				<p>
-					<time datetime="2016-12-07T19:00:00+08:00" pubdate><span class='month'>12月</span> <span class='day'>07</span> <span class='year'>2016</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	 
-</div>  
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '17171531991501.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
 </div></div>
 
 
@@ -503,7 +245,89 @@ Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
     </div>
     
 
+<style>.mweb-charts{background:#fff;}
+body{ box-sizing: border-box;
+    margin: 0 auto;}
+@media print{
+    pre, code, pre code {
+     overflow: visible !important;
+     white-space: pre-wrap !important;       /* css-3 */
+     white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+     white-space: -pre-wrap !important;      /* Opera 4-6 */
+     white-space: -o-pre-wrap !important;    /* Opera 7 */
+     word-wrap: break-word !important;       /* Internet Explorer 5.5+ */
+    }
+    html,body{margin:0;padding:4px;}
+}
 
+
+
+div.code-toolbar {
+  position: relative;
+}
+
+div.code-toolbar > .toolbar {
+  position: absolute;
+  z-index: 10;
+  top: .3em;
+  right: .2em;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+}
+
+div.code-toolbar:hover > .toolbar {
+  opacity: 1;
+}
+
+/* Separate line b/c rules are thrown out if selector is invalid.
+   IE11 and old Edge versions don't support :focus-within. */
+div.code-toolbar:focus-within > .toolbar {
+  opacity: 1;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+  display: inline-block;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a {
+  cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  line-height: normal;
+  overflow: visible;
+  padding: 0;
+  -webkit-user-select: none; /* for button */
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+  color: inherit;
+  font-size: .8em;
+  padding: 4px .5em;
+  background: #f5f2f0;
+  background: rgba(224, 224, 224, 0.4);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+  border-radius: .5em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus,
+div.code-toolbar > .toolbar > .toolbar-item > span:hover,
+div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+  color: inherit;
+  text-decoration: none;
+}
+</style><script>window.MathJax = {     tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } ,     startup: {     pageReady() {       return MathJax.startup.defaultPageReady().then(function () {          window.mweb_mathjax_ready_val = 'yes';          if(window.mweb_mathjax_ready !== undefined){ mweb_mathjax_ready(); }       });     }   }};document.addEventListener('DOMContentLoaded', function(event) {    if (typeof Prism != 'undefined') {         Prism.highlightAll();     }});window.mweb_mathjax_ready_val = '';function theMWebMathJaxRenderIsReady(key){ return window.mweb_mathjax_ready_val; }</script><script>window.MathJax = { tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } }; </script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
 
 <style type="text/css">
 figure{margin: 0.4em 0;padding: 0;}

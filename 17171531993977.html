@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Archives - RookieNeo
+  从UTF-8到Bytes数组都经历了什么 - RookieNeo
   
   </title>
  <meta name="description" content="">
@@ -162,324 +162,77 @@
             <div class="large-9 medium-9 columns">
 
  <div class="markdown-body">
-	
-		 
-		  	<h2>2021</h2>
-		
-		
-			<div>
-				<h3><a href="17171531993977.html">从UTF-8到Bytes数组都经历了什么</a></h3>
-				<p>
-					<time datetime="2021-05-31T18:59:59+08:00" pubdate><span class='month'>5月</span> <span class='day'>31</span> <span class='year'>2021</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<h1>从UTF-8到Bytes数组都经历了什么</h1>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2020</h2>
-		
-		
-			<div>
-				<h3><a href="17173303899677.html">iOS 事件的传递链和响应链</a></h3>
-				<p>
-					<time datetime="2020-12-09T20:13:09+08:00" pubdate><span class='month'>12月</span> <span class='day'>09</span> <span class='year'>2020</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<p>最近公司的项目需要和蓝牙硬件做对接，硬件部门要我将一个UInt32位的时间戳转成一个低位在前的UInt8的Bytes数组后再做加密后传递给他。说实话长期用高级语言编程，对这些Byte数组之类的已经不是很熟悉了，至于什么UTF-8，Unicode，String，Int8...32...64都经常打交道，但在高级语言中，底层帮我们做了太多的事，以至于你不关注它，也没有对你产生什么影响。但这次不行了，所以我打算把这件事彻底搞懂。</p>
+<p>首先我们要明确一点，就是计算机的存储，各种传输都是二进制的，他们的最小单位是8位，也就是1Byte。所以任何数据，其实都可以看做是一个Bytes数组。</p>
+<h4><a id="%E6%95%B0%E5%AD%97%E7%B1%BB%E5%9E%8B" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>数字类型</h4>
+<p>我们先说数字类型到Bytes数组。这个很简单。我们举例说明<br />
+例如一个UInt32的时间戳是 <code>1614591882</code><br />
+将UInt32位时间戳转为低位在前的4位UInt8数组的结果是: <code>[138, 183, 60, 96]</code><br />
+乍一看好像一点规律没有呢，主要是因为我们都给转换成了10进制。让我们用二进制看一下。</p>
+<p><code>1614591882</code>的二进制是<code>01100000001111001011011110001010</code>一个32位的二进制数。<br />
+让我们把它按照低位在前的形式转成一个Bytes数组<code>[10001010, 10110111, 00111100, 01100000]</code></p>
+<p>然后我们再把数组中的每个元素转成十进制，其实就是上面提到的那个数组<code>[138, 183, 60, 96]</code></p>
+<p>我们可以发现用十进制看起来很不直观，但二进制太长，很容易看错，看起来也很累（虽然计算机就是这么储存的）那么有没有一种看起来又直观，又不容易出错的，有的，那就是十六进制。<br />
+让我们用十六进制再来一遍</p>
+<p><code>1614591882</code>的十六进制是<code>0x603cb78a</code><br />
+那我们把他转成一个低位在前的4位UInt8数组的结果是： <code>[0x8a, 0xb7, 0x3c, 0x60]</code><br />
+这样就又直观，又方便了。（这也是为什么我们在查看内存地址之类的操作的时候计算机都展示为十六进制，如果直接把存储的二进制展示出来也不是不行，但是看起来就可能会瞎了）</p>
+<h4><a id="%E5%AD%97%E7%AC%A6%E7%B1%BB%E5%9E%8B" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>字符类型</h4>
+<p>刚才我们说的都是数字类型，那我们光存储或传递数字类型肯定是不够的，这时候ASCII码表就诞生了。</p>
+<p><img src="media/17171531993977/16164871348562.jpg" alt="" /></p>
+<p>例如 <code>01000000</code>代表的是字符<code>@</code>，<code>00110000</code> 代表的是字符<code>1</code>，注意这里面的<code>1</code>和我们上边提到的数字<code>1</code>不是一回事，首先它们的类型就不一样，而且他们的二进制表示也不用 数字类型在UInt8下的表示是<code>00000001</code>。<br />
+随着计算机的发展，需要表示的字符越来越多，比如汉子，韩文，日文 等等。这时候就需要一个更大的字符集，那Unicode就诞生了，ASCII的部分保持不变，高位补0.通用字符集（Universal Character Set, UCS）是由ISO制定的ISO 10646（或称ISO/IEC 10646）标准所定义的标准字符集。UCS-2用两个字节编码，UCS-4用4个字节编码。<br />
+那么我们再来看看Unicode和UTF-8的关系</p>
+<p><img src="media/17171531993977/16164889129236.jpg" alt="" /><br />
+<img src="media/17171531993977/16164889272766.jpg" alt="" /><br />
+<a href="https://www.zhihu.com/question/23374078">这是在知乎看到的，我觉得讲的比较透彻</a></p>
+<h4><a id="%E6%80%BB%E7%BB%93" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>总结</h4>
+<p>回到我们之前说的那个问题，把时间戳转成低位在前的4位UInt8数组，如果你用一个String类型去转，那肯定是错了，因为他会按照UTF-8的规则就解析。</p>
+<p>比如你相传数字1，但你将<code>&quot;1&quot;.data(using: .utf8)</code>这样去操作，那得到的会是<code>00110000</code>,这时候你传递给另一端，他把这个Byte当做数字就处理，得到的数是<code>48</code>，显然它不是<code>1</code></p>
+<p>其实我们最主要的就是要搞懂「数字」和「字符」的区别，至于怎么解析，那要看如何规定的，比如和硬件传递时间戳这个事，你们也可以规定用一个UTF-8编码的String去传，然后大家都用UTF-8去解析。这样也是一点问题都没有，只不过在单片机上，他们更喜欢按位操作。如果是UFT-8字符集那位数就不固定了，操作会变难。</p>
+<p>在高级语言中，我们很少关注这类问题，甚至我们可以比较两个String类型的大小，也可以很轻松的将String和Int相互转化，但是这中间的过程还是很有必要了解的。</p>
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531999816.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></h3>
-				<p>
-					<time datetime="2020-08-21T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>21</span> <span class='year'>2020</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2019</h2>
-		
-		
-			<div>
-				<h3><a href="17173351090875.html">图</a></h3>
-				<p>
-					<time datetime="2019-11-15T21:31:49+08:00" pubdate><span class='month'>11月</span> <span class='day'>15</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
+</div>
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17173350023813.html">二叉树</a></h3>
-				<p>
-					<time datetime="2019-09-09T21:30:02+08:00" pubdate><span class='month'>9月</span> <span class='day'>09</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
+<br /><br />
+<hr />
 
-				</p>
-			</div>
- 	
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
 		
+	        <a href="17173303899677.html"  title="Previous Post: iOS 事件的传递链和响应链">&laquo; iOS 事件的传递链和响应链</a>
+	    
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
 		
-			<div>
-				<h3><a href="17171531991501.html">学习SwiftUI两周之后</a></h3>
-				<p>
-					<time datetime="2019-06-23T18:59:59+08:00" pubdate><span class='month'>6月</span> <span class='day'>23</span> <span class='year'>2019</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+	        <a href="17171531999816.html" 
+	        title="Next Post: 由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
 
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2018</h2>
-		
-		
-			<div>
-				<h3><a href="17171531990780.html">沙漏动画</a></h3>
-				<p>
-					<time datetime="2018-11-16T18:59:59+08:00" pubdate><span class='month'>11月</span> <span class='day'>16</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
 
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531990493.html">Hash表</a></h3>
-				<p>
-					<time datetime="2018-07-19T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>19</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991583.html">关于HTTPS的探究</a></h3>
-				<p>
-					<time datetime="2018-07-05T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>05</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531993833.html">链表</a></h3>
-				<p>
-					<time datetime="2018-07-03T18:59:59+08:00" pubdate><span class='month'>7月</span> <span class='day'>03</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.html'>数据结构</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991065.html">灵活扩展的下拉刷新控件的封装</a></h3>
-				<p>
-					<time datetime="2018-06-12T18:59:59+08:00" pubdate><span class='month'>6月</span> <span class='day'>12</span> <span class='year'>2018</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2017</h2>
-		
-		
-			<div>
-				<h3><a href="17171531991223.html">从切圆角引发的对iOS动画框架的探究</a></h3>
-				<p>
-					<time datetime="2017-10-05T18:59:59+08:00" pubdate><span class='month'>10月</span> <span class='day'>05</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532001444.html">按钮加下拉弹框控件的封装</a></h3>
-				<p>
-					<time datetime="2017-09-30T19:00:00+08:00" pubdate><span class='month'>9月</span> <span class='day'>30</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991672.html">Whats-new-in-swift-4</a></h3>
-				<p>
-					<time datetime="2017-09-20T18:59:59+08:00" pubdate><span class='month'>9月</span> <span class='day'>20</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531991298.html">基于Alamofire网络库的二次封装</a></h3>
-				<p>
-					<time datetime="2017-08-28T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>28</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171531990843.html">Swift中对于有先后顺序的网络请求的优化</a></h3>
-				<p>
-					<time datetime="2017-08-15T18:59:59+08:00" pubdate><span class='month'>8月</span> <span class='day'>15</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532000864.html">Swift中对UserDefaults的封装</a></h3>
-				<p>
-					<time datetime="2017-07-23T19:00:00+08:00" pubdate><span class='month'>7月</span> <span class='day'>23</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		
-		
-			<div>
-				<h3><a href="17171532001692.html">Swift的一种常用类型</a></h3>
-				<p>
-					<time datetime="2017-03-02T19:00:00+08:00" pubdate><span class='month'>3月</span> <span class='day'>02</span> <span class='year'>2017</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	
-		 
-		  	<h2>2016</h2>
-		
-		
-			<div>
-				<h3><a href="17171532000408.html">对Swift写时复制技术的理解</a></h3>
-				<p>
-					<time datetime="2016-12-07T19:00:00+08:00" pubdate><span class='month'>12月</span> <span class='day'>07</span> <span class='year'>2016</span></time>
-					&nbsp;&nbsp;
-				  <span class="categories">posted in 
-				  
-					    <a class='category' href='Swift.html'>Swift</a>&nbsp;
-				   
-				  </span>
-
-				</p>
-			</div>
- 	 
-</div>  
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '17171531993977.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
 </div></div>
 
 
@@ -503,7 +256,89 @@ Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
     </div>
     
 
+<style>.mweb-charts{background:#fff;}
+body{ box-sizing: border-box;
+    margin: 0 auto;}
+@media print{
+    pre, code, pre code {
+     overflow: visible !important;
+     white-space: pre-wrap !important;       /* css-3 */
+     white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+     white-space: -pre-wrap !important;      /* Opera 4-6 */
+     white-space: -o-pre-wrap !important;    /* Opera 7 */
+     word-wrap: break-word !important;       /* Internet Explorer 5.5+ */
+    }
+    html,body{margin:0;padding:4px;}
+}
 
+
+
+div.code-toolbar {
+  position: relative;
+}
+
+div.code-toolbar > .toolbar {
+  position: absolute;
+  z-index: 10;
+  top: .3em;
+  right: .2em;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+}
+
+div.code-toolbar:hover > .toolbar {
+  opacity: 1;
+}
+
+/* Separate line b/c rules are thrown out if selector is invalid.
+   IE11 and old Edge versions don't support :focus-within. */
+div.code-toolbar:focus-within > .toolbar {
+  opacity: 1;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+  display: inline-block;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a {
+  cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  line-height: normal;
+  overflow: visible;
+  padding: 0;
+  -webkit-user-select: none; /* for button */
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+  color: inherit;
+  font-size: .8em;
+  padding: 4px .5em;
+  background: #f5f2f0;
+  background: rgba(224, 224, 224, 0.4);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+  border-radius: .5em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus,
+div.code-toolbar > .toolbar > .toolbar-item > span:hover,
+div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+  color: inherit;
+  text-decoration: none;
+}
+</style><script>window.MathJax = {     tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } ,     startup: {     pageReady() {       return MathJax.startup.defaultPageReady().then(function () {          window.mweb_mathjax_ready_val = 'yes';          if(window.mweb_mathjax_ready !== undefined){ mweb_mathjax_ready(); }       });     }   }};document.addEventListener('DOMContentLoaded', function(event) {    if (typeof Prism != 'undefined') {         Prism.highlightAll();     }});window.mweb_mathjax_ready_val = '';function theMWebMathJaxRenderIsReady(key){ return window.mweb_mathjax_ready_val; }</script><script>window.MathJax = { tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } }; </script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
 
 <style type="text/css">
 figure{margin: 0.4em 0;padding: 0;}

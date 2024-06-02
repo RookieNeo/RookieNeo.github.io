@@ -1,0 +1,574 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  基于Alamofire网络库的二次封装 - RookieNeo
+  
+  </title>
+ <meta name="description" content="">
+ <link href="atom.xml" rel="alternate" title="RookieNeo" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+<div id="header">
+    <h1><a href="index.html">RookieNeo</a></h1>
+</div>
+
+</nav>
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; RookieNeo</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+      <li><a href="index.html">Home</a></li>
+      
+        <li class="divider"></li>
+        <li><label>Swift</label></li>
+
+          
+            <li><a title="iOS 事件的传递链和响应链" href="17173303899677.html">iOS 事件的传递链和响应链</a></li>
+          
+            <li><a title="从UTF-8到Bytes数组都经历了什么" href="17171531993977.html">从UTF-8到Bytes数组都经历了什么</a></li>
+          
+            <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="17171531999816.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+          
+            <li><a title="学习SwiftUI两周之后" href="17171531991501.html">学习SwiftUI两周之后</a></li>
+          
+            <li><a title="沙漏动画" href="17171531990780.html">沙漏动画</a></li>
+          
+            <li><a title="关于HTTPS的探究" href="17171531991583.html">关于HTTPS的探究</a></li>
+          
+            <li><a title="灵活扩展的下拉刷新控件的封装" href="17171531991065.html">灵活扩展的下拉刷新控件的封装</a></li>
+          
+            <li><a title="从切圆角引发的对iOS动画框架的探究" href="17171531991223.html">从切圆角引发的对iOS动画框架的探究</a></li>
+          
+            <li><a title="按钮加下拉弹框控件的封装" href="17171532001444.html">按钮加下拉弹框控件的封装</a></li>
+          
+            <li><a title="Whats-new-in-swift-4" href="17171531991672.html">Whats-new-in-swift-4</a></li>
+          
+            <li><a title="基于Alamofire网络库的二次封装" href="17171531991298.html">基于Alamofire网络库的二次封装</a></li>
+          
+            <li><a title="Swift中对于有先后顺序的网络请求的优化" href="17171531990843.html">Swift中对于有先后顺序的网络请求的优化</a></li>
+          
+            <li><a title="Swift中对UserDefaults的封装" href="17171532000864.html">Swift中对UserDefaults的封装</a></li>
+          
+            <li><a title="Swift的一种常用类型" href="17171532001692.html">Swift的一种常用类型</a></li>
+          
+            <li><a title="对Swift写时复制技术的理解" href="17171532000408.html">对Swift写时复制技术的理解</a></li>
+          
+
+      
+        <li class="divider"></li>
+        <li><label>数据结构</label></li>
+
+          
+            <li><a title="图" href="17173351090875.html">图</a></li>
+          
+            <li><a title="二叉树" href="17173350023813.html">二叉树</a></li>
+          
+            <li><a title="链表" href="17171531993833.html">链表</a></li>
+          
+            <li><a title="Hash表" href="17171531990493.html">Hash表</a></li>
+          
+
+      
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+        <section id="main-content" role="main" class="scroll-container">
+
+          <div class="row">
+            <div class="large-3 medium-3 columns">
+              <div class="hide-for-small">
+                <div class="sidebar">
+                <nav>
+                  <ul id="side-nav" class="side-nav">
+
+                    
+                      <li class="side-title"><span>Swift</span></li>
+                        
+                          <li><a title="iOS 事件的传递链和响应链" href="17173303899677.html">iOS 事件的传递链和响应链</a></li>
+                        
+                          <li><a title="从UTF-8到Bytes数组都经历了什么" href="17171531993977.html">从UTF-8到Bytes数组都经历了什么</a></li>
+                        
+                          <li><a title="由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究" href="17171531999816.html">由一个"Bug"引发的对Swift中Hashable，Equatable原理的探究</a></li>
+                        
+                          <li><a title="学习SwiftUI两周之后" href="17171531991501.html">学习SwiftUI两周之后</a></li>
+                        
+                          <li><a title="沙漏动画" href="17171531990780.html">沙漏动画</a></li>
+                        
+                          <li><a title="关于HTTPS的探究" href="17171531991583.html">关于HTTPS的探究</a></li>
+                        
+                          <li><a title="灵活扩展的下拉刷新控件的封装" href="17171531991065.html">灵活扩展的下拉刷新控件的封装</a></li>
+                        
+                          <li><a title="从切圆角引发的对iOS动画框架的探究" href="17171531991223.html">从切圆角引发的对iOS动画框架的探究</a></li>
+                        
+                          <li><a title="按钮加下拉弹框控件的封装" href="17171532001444.html">按钮加下拉弹框控件的封装</a></li>
+                        
+                          <li><a title="Whats-new-in-swift-4" href="17171531991672.html">Whats-new-in-swift-4</a></li>
+                        
+                          <li><a title="基于Alamofire网络库的二次封装" href="17171531991298.html">基于Alamofire网络库的二次封装</a></li>
+                        
+                          <li><a title="Swift中对于有先后顺序的网络请求的优化" href="17171531990843.html">Swift中对于有先后顺序的网络请求的优化</a></li>
+                        
+                          <li><a title="Swift中对UserDefaults的封装" href="17171532000864.html">Swift中对UserDefaults的封装</a></li>
+                        
+                          <li><a title="Swift的一种常用类型" href="17171532001692.html">Swift的一种常用类型</a></li>
+                        
+                          <li><a title="对Swift写时复制技术的理解" href="17171532000408.html">对Swift写时复制技术的理解</a></li>
+                        
+
+                    
+                      <li class="side-title"><span>数据结构</span></li>
+                        
+                          <li><a title="图" href="17173351090875.html">图</a></li>
+                        
+                          <li><a title="二叉树" href="17173350023813.html">二叉树</a></li>
+                        
+                          <li><a title="链表" href="17171531993833.html">链表</a></li>
+                        
+                          <li><a title="Hash表" href="17171531990493.html">Hash表</a></li>
+                        
+
+                    
+                  </ul>
+                </nav>
+                </div>
+              </div>
+            </div>
+            <div class="large-9 medium-9 columns">
+
+ <div class="markdown-body">
+<h1>基于Alamofire网络库的二次封装</h1>
+
+<p>Alamofire作为一个Swift的网络框架被开发者们大量使用在自己的项目中,但处于公司的业务,统一处理,后期换库  <del>但实际可能永远不会</del> 等多方面的考虑,一般都会对其进行二次封装.由于公司项目的网络框架是我写的,并进过了多次重构,优化,我觉得可以满足大部分的日常需要,所以我准备拿出来和大家讨论一下.</p>
+<h4><a id="1" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>1</h4>
+<p>首先我准备把框架分为业务层,数据层(整合数据,加密,统一处理的位置)和最后的网络层.其实之前也有想直接分两层,但是为了换库的时候没有痛感,最后还是考虑分为三层了,将网络层由中间层调用,所以换库之后,业务层不会有改动,而且数据整合解析层 也不会有改动.而且还有一点考虑,之后我会提到.<br />
+<img src="media/17171531991298/15018086716115.jpg" alt="" style="width:234px;" /><br />
+下面我就说一下我设计时候的思路.</p>
+<h4><a id="2%E5%AE%9A%E4%B9%89%E6%8E%A5%E5%8F%A3" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>2定义接口</h4>
+<p>也就是业务层需要发起网络请求时候的接口.我定义的接口是这样的<br />
+<img src="media/17171531991298/15018095032823.jpg" alt="" style="width:2800px;" /></p>
+<pre><code class="language-plain_text">@discardableResult class func request(withInterface interface: URLConfig,requestData: [String:Any]?,method : NetHTTPMethod = .Post,serverType : RequestType = RequestType.hhtServer,completed: @escaping(_ dataResult : DataResult&lt;Dictionary&lt;String, Any&gt;&gt;) -&gt; Void) -&gt; URLSessionTask?
+</code></pre>
+<p>至于为什么定义成这样子,我一个参数一个参数的解释,其实解释完了,这篇博客也就差不多了.</p>
+<h6><a id="%E9%A6%96%E5%85%88%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%8F%82%E6%95%B0interface-urlconfig" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>首先第一个参数interface: URLConfig</h6>
+<p>URLConfig是一个协议.内容很简单</p>
+<pre><code class="language-plain_text">protocol URLConfig{
+    func getPath() -&gt; String
+}
+</code></pre>
+<p>就只有一个<code>getPath</code>的方法,目的是获取接口的url路径,有人会说,那为什么要定义一个协议呢?直接一个<code>String</code>类型不就可以了吗?这样做有一个好处,大家有没有发现,让你直接调用Alamofire的时候,可以传String,也可以传URL,都可以,因为它的类型也是一个协议呀,String和URL都实现了这个协议就ok拉,所以我也是这样做的.其实就是面向对象中的多态.</p>
+<h6><a id="%E6%8E%A5%E5%8F%A3%E7%9A%84%E7%AE%A1%E7%90%86" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>接口的管理</h6>
+<p>在项目中我是用枚举关联String管理接口的,这样的好处是接口统一在一个位置,清晰,易扩展,好维护.<br />
+<img src="media/17171531991298/15018108531635.jpg" alt="" /><br />
+枚举同样也实现了URLConfig协议,在调用网络接口的时候,第一个参数只需要填入<code>InterfaceEnum.devAuth</code>就可以了,可能有朋友会有疑问,基本每个公司开发接口,测试接口,正式接口,有的时候你们公司对接别的服务器,还有有不同的协议,比如你们用https他们用http的情况,切换环境,我用一个全局变量就ok了,就是NetConfig.curServerIP,只要把curServerIP换了,环境也就切换了,但是一部分用http,另一部分用https,或有的时候你和同事联调,100个接口有10个跑他的ip,90个跑服务器的,怎么办呢?其实很简单,这就体现了协议的好处,你在建一个<code>InterfaceXXXXEnum</code>,再实现一个getPath协议,这次你可以拼接成https://  也可以拼接成ftp的都可以了,这样做之后,你会发现,你的接口管理的很清晰,那个接口是http的  哪个是https的,哪个是XXX的,一看就知道了,统一了管理.</p>
+<h6><a id="%E7%AC%AC%E4%BA%8C%E4%B8%AA%E5%8F%82%E6%95%B0%E6%98%AF%E6%8E%A5%E5%8F%A3%E4%B8%AD%E9%9C%80%E8%A6%81%E7%9A%84%E5%8F%82%E6%95%B0%E8%BF%99%E4%B8%AA%E6%B2%A1%E5%95%A5%E5%A5%BD%E8%AF%B4%E7%9A%84" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>第二个参数是接口中需要的参数,这个没啥好说的</h6>
+<h6><a id="%E7%AC%AC%E4%B8%89%E4%B8%AA%E6%98%AF%E8%AF%B7%E6%B1%82%E7%9A%84%E6%96%B9%E5%BC%8F" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>第三个是请求的方式</h6>
+<p>是GET还是POST,按理说这个也没啥好说的,但是有一点我希望在这里说明,也就是我上文我说的之后我会说的,由于我们用的是AlamoFire,他有自己的请求类型枚举<br />
+<img src="media/17171531991298/15018121396577.jpg" alt="" /><br />
+但是我不想用它,因为我们进行二次封装的目的是什么,是隔离,不想让他对项目有太多的入侵,所以这也是我建这个中间层的第二个目的,在中间层,把所有数据转换成Foundation框架的基本类型,传递给Alamofire,这样,后期无论怎么换,只要有Foundation在,我的框架就不由会大问题.所以我自己也建了一个枚举跟上面的枚举差不多,只不过区别是他是他的,我是我的~~.<br />
+<img src="media/17171531991298/15018126056939.jpg" alt="" /></p>
+<h6><a id="%E7%AC%AC%E5%9B%9B%E4%B8%AA%E5%8F%82%E6%95%B0servertype" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>第四个参数,serverType</h6>
+<p>在实际开发中,有很多时候你对接的不是一个服务器,比如美团,微信,阿里他的项目中嵌入了好多别人的项目,虽然这些项目的网络请求会在自己的sdk中解决,但是难免会出现一个项目跑两个服务器的情况,就像我们公司海底捞重构的项目,前端和后端一起重构,但是前端之前有过UI重构的经验了,所以写起来要比后端快的多,所以我们在重构的时候大部分还是用的老接口,这时候,有个后端的大哥说,那个我这几个接口做好了,你试试吧,但是他的这几个接口是有前置条件了,但这些前置条件在新的服务器中还没有实现,这时候你就需要前置接口调用老服务器,新接口调用新服务器,不同的服务器,加密解密方式,数据的拼接要求肯定是不同的,所以我就又造了一个枚举,<code>ServerType</code><br />
+<img src="media/17171531991298/15018134572100.jpg" alt="" /><br />
+有个这个枚举之后,就可以根据不用的服务器,做不同的加密,数据返回后做不同的解析了.<br />
+######然后就是最后一个参数了,回调函数.<br />
+这个回调函数其实也没什么说的,但是我对数据做了一层封装,就是DataResult的数据类型,至于为什么,我的Swift的一种常用类型那篇博文里有说明,大家可以去看看.<br />
+######最后作为一个网络请求,你的返回值是什么<br />
+它是什么,取决你要拿它干嘛用,很多时候,在轮询的场景下,一个请求没完成,不能发起下一个请求,或是把上一个请求取消,所以我就把<code>URLSessionTask</code>返回了,其实Alamofire也有自己的Task,但是我还是坚持返回了<code>Foundation</code>框架里的类型,至于为啥就不多说了.<br />
+####3核心的实现<br />
+网络核心层当然后调用Alamofire了,这部分就比较简单了.在这之前,先看下上面讲的接口的实现.<br />
+<img src="media/17171531991298/15018136557339.jpg" alt="" /><br />
+default就是核心层的单例</p>
+<pre><code class="language-plain_text">private static let `default` : RequestManagerProtocol = RequestManager()
+</code></pre>
+<p><img src="media/17171531991298/15018138410087.jpg" alt="" /><br />
+这一层中,还是一个协议,保证了接口的统一,如果有换库等行为,只要实现了这个协议,就可以保证对外暴露的接口不变.<br />
+####业务层的调用<br />
+尽管我们接口中有很多参数,但是大部分都有默认参数,所以大部分情况下,业务端是不需要知道全部参数的,他只需要知道两个参数,一个是接口地址,一个是要传的参数</p>
+<pre><code class="language-plain_text">NetRequest.request(withInterface: InterfaceEnum.cashNeedMoney, requestData: params) { (data) in
+            switch data {
+            case .failure(let error):
+                complete(DataResult.failure(error))
+            case .success(let value):
+                let money = (value[&quot;DATA&quot;] as? NSNumber) ?? 0
+                complete(DataResult.success(money))
+            }
+        }
+</code></pre>
+<p>仅此而已,这就够了.</p>
+<h4><a id="%E6%80%9D%E8%80%83" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>思考</h4>
+<p>到目前为止,我的这个封装完全满足了项目的需求,但是也有在考虑要不要增加返回数据的类型,现在我只支持返回字典,但是这样做我也是有自己的想法的,因为一个项目业务端的解析方式大都很固定,我给他们暴露了太多的接口,反而会导致业务端调用的混乱,毕竟我是二次封装,如果写的太多了,就不是二次封装了.下一篇博客,我会分析Alamofire的源码,并提出我的疑惑,欢迎来撕~</p>
+
+
+</div>
+
+<br /><br />
+<hr />
+
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
+		
+	        <a href="17171531991672.html"  title="Previous Post: Whats-new-in-swift-4">&laquo; Whats-new-in-swift-4</a>
+	    
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
+		
+	        <a href="17171531990843.html" 
+	        title="Next Post: Swift中对于有先后顺序的网络请求的优化">Swift中对于有先后顺序的网络请求的优化 &raquo;</a>
+	    
+	</div>
+  </div>
+</div>
+
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
+
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '17171531991298.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
+</div></div>
+
+
+<div class="page-bottom">
+  <div class="row">
+  <hr />
+  <div class="small-9 columns">
+  <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+  <div class="small-3 columns">
+  <p class="copyright text-right"><a href="#header">TOP</a></p>
+  </div>
+   
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+    
+
+<style>.mweb-charts{background:#fff;}
+body{ box-sizing: border-box;
+    margin: 0 auto;}
+@media print{
+    pre, code, pre code {
+     overflow: visible !important;
+     white-space: pre-wrap !important;       /* css-3 */
+     white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+     white-space: -pre-wrap !important;      /* Opera 4-6 */
+     white-space: -o-pre-wrap !important;    /* Opera 7 */
+     word-wrap: break-word !important;       /* Internet Explorer 5.5+ */
+    }
+    html,body{margin:0;padding:4px;}
+}
+
+
+
+div.code-toolbar {
+  position: relative;
+}
+
+div.code-toolbar > .toolbar {
+  position: absolute;
+  z-index: 10;
+  top: .3em;
+  right: .2em;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+}
+
+div.code-toolbar:hover > .toolbar {
+  opacity: 1;
+}
+
+/* Separate line b/c rules are thrown out if selector is invalid.
+   IE11 and old Edge versions don't support :focus-within. */
+div.code-toolbar:focus-within > .toolbar {
+  opacity: 1;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+  display: inline-block;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a {
+  cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  line-height: normal;
+  overflow: visible;
+  padding: 0;
+  -webkit-user-select: none; /* for button */
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+  color: inherit;
+  font-size: .8em;
+  padding: 4px .5em;
+  background: #f5f2f0;
+  background: rgba(224, 224, 224, 0.4);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+  border-radius: .5em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus,
+div.code-toolbar > .toolbar > .toolbar-item > span:hover,
+div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+  color: inherit;
+  text-decoration: none;
+}
+</style><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script><script>!function(){if("undefined"!=typeof Prism&&"undefined"!=typeof document){var e=[],t={},n=function(){};Prism.plugins.toolbar={};var a=Prism.plugins.toolbar.registerButton=function(n,a){var r;r="function"==typeof a?a:function(e){var t;return"function"==typeof a.onClick?((t=document.createElement("button")).type="button",t.addEventListener("click",(function(){a.onClick.call(this,e)}))):"string"==typeof a.url?(t=document.createElement("a")).href=a.url:t=document.createElement("span"),a.className&&t.classList.add(a.className),t.textContent=a.text,t},n in t?console.warn('There is a button with the key "'+n+'" registered already.'):e.push(t[n]=r)},r=Prism.plugins.toolbar.hook=function(a){var r=a.element.parentNode;var l=a.element.classList;if(l.contains('language-mermaid') || l.contains('language-echarts') || l.contains('language-plantuml')){return;} if(r&&/pre/i.test(r.nodeName)&&!r.parentNode.classList.contains("code-toolbar")){var o=document.createElement("div");o.classList.add("code-toolbar"),r.parentNode.insertBefore(o,r),o.appendChild(r);var i=document.createElement("div");i.classList.add("toolbar");var l=e,d=function(e){for(;e;){var t=e.getAttribute("data-toolbar-order");if(null!=t)return(t=t.trim()).length?t.split(/\s*,\s*/g):[];e=e.parentElement}}(a.element);d&&(l=d.map((function(e){return t[e]||n}))),l.forEach((function(e){var t=e(a);if(t){var n=document.createElement("div");n.classList.add("toolbar-item"),n.appendChild(t),i.appendChild(n)}})),o.appendChild(i)}};a("label",(function(e){var t=e.element.parentNode;if(t&&/pre/i.test(t.nodeName)&&t.hasAttribute("data-label")){var n,a,r=t.getAttribute("data-label");try{a=document.querySelector("template#"+r)}catch(e){}return a?n=a.content:(t.hasAttribute("data-url")?(n=document.createElement("a")).href=t.getAttribute("data-url"):n=document.createElement("span"),n.textContent=r),n}})),Prism.hooks.add("complete",r)}}();</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/toolbar/prism-toolbar.min.css"><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script><script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script><style>div.code-toolbar > .toolbar > .toolbar-item > a, div.code-toolbar > .toolbar > .toolbar-item > button, div.code-toolbar > .toolbar > .toolbar-item > span {padding: 4px .5em; background: #f5f2f0; background: rgba(224, 224, 224, 0.4);}</style><script>window.MathJax = {     tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } ,     startup: {     pageReady() {       return MathJax.startup.defaultPageReady().then(function () {          window.mweb_mathjax_ready_val = 'yes';          if(window.mweb_mathjax_ready !== undefined){ mweb_mathjax_ready(); }       });     }   }};document.addEventListener('DOMContentLoaded', function(event) {    if (typeof Prism != 'undefined') {         Prism.highlightAll();     }});window.mweb_mathjax_ready_val = '';function theMWebMathJaxRenderIsReady(key){ return window.mweb_mathjax_ready_val; }</script><script>window.MathJax = { tex: { tags: 'ams', displayMath: [ ['\\[', '\\]'] ] } }; </script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
+
+<style type="text/css">
+figure{margin: 0.4em 0;padding: 0;}
+  figcaption{text-align:center;}
+
+/* PrismJS 1.14.0
+ http://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript */
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: black;
+    background: none;
+    text-shadow: 0 1px white;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+    
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
+code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
+    text-shadow: none;
+    background:#b3d4fc;
+}
+
+pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
+code[class*="language-"]::selection, code[class*="language-"] ::selection {
+    text-shadow: none;
+    background: #b3d4fc;
+}
+
+@media print {
+    code[class*="language-"],
+    pre[class*="language-"] {
+        text-shadow: none;
+    }
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+    background: #F7F7F7;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+    padding: .1em;
+    border-radius: .3em;
+    white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: slategray;
+}
+
+.token.punctuation {
+    color: #999;
+}
+
+.namespace {
+    opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: #905;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #690;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+    color: #9a6e3a;
+    background: hsla(0, 0%, 100%, .5);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+    color: #07a;
+}
+
+.token.function,
+.token.class-name {
+    color: #DD4A68;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+    color: #e90;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+
+pre[class*="language-"].line-numbers {
+    position: relative;
+    padding-left: 3.8em;
+    counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+    position: relative;
+    white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    font-size: 100%;
+    left: -3.8em;
+    width: 3em; /* works for line-numbers below 1000 lines */
+    letter-spacing: -1px;
+    border-right: 1px solid #999;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+
+    .line-numbers-rows > span {
+        pointer-events: none;
+        display: block;
+        counter-increment: linenumber;
+    }
+
+        .line-numbers-rows > span:before {
+            content: counter(linenumber);
+            color: #999;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+        }
+
+
+</style>
+    
+    <script src="asset/js/foundation.min.js"></script>
+    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
+    <script>
+      $(document).foundation();
+
+     
+    </script>
+
+
+  </body>
+</html>
